@@ -1,0 +1,354 @@
+void World::build(){
+    //int num_samples = 16;   
+    int num_samples = 256;
+
+    Sampler* sampler_ptr = new MultiJitteredSampler(num_samples);
+    vp.maxDepth = 0;
+    vp.hres = 600;
+    vp.vres = 600;
+    vp.pixelSize = 0.5;
+    vp.sampleCount = num_samples;
+    vp.sampler = sampler_ptr;	
+
+    background = RGBColor(0.5);
+    imageWidth = vp.hres;
+    imageHeight = vp.vres;
+    imageBuffer = new RGBColor[imageHeight*imageWidth];
+
+    tracer = new AreaLighting(this);
+
+    PinHole* camera = new PinHole;
+    camera->setEye(0,0,-10000);
+    camera->setLookAt(0.0); 	
+    camera->setDistance(15000);          
+    camera->computeUVW();     
+    this->camera = camera; 
+
+    Ambient* ambient_ptr = new Ambient;
+    ambient_ptr->scaleRadiance(0.0);
+    ambient_ptr->setColor(0.0);
+    ambient_ptr->setShadow(false);
+    //ambient = ambient_ptr;
+
+    AmbientOccluder*  occluder= new AmbientOccluder;
+    occluder->setMinAmount(0.5);
+    //occluder->setSampler(new MultiJitteredSampler(num_samples));
+    occluder->setSampler(sampler_ptr);
+    ambient = occluder;
+
+    Emissive* emissive_ptr = new Emissive;
+    emissive_ptr->scaleRadiance(0.9);
+    emissive_ptr->setCe(1.0,1.0,1.0);
+
+
+    EnvironmentLight* environment_light_ptr = new EnvironmentLight;
+    environment_light_ptr->setMaterial(emissive_ptr);
+    //environment_light_ptr->setSampler(new MultiJitteredSampler(num_samples));
+    environment_light_ptr->setSampler(sampler_ptr);
+    environment_light_ptr->setShadow(true);
+    addLight(environment_light_ptr);
+
+
+    /*AreaLight* area_light_ptr = new AreaLight;
+    area_light_ptr->setObject(rectangle_ptr);
+    area_light_ptr->setMaterial(emissive_ptr);
+    area_light_ptr->setShadow(true);
+    addLight(area_light_ptr);*/
+
+
+    // Four axis aligned boxes
+
+
+    float ka = 0.25;
+    float kd = 0.75;
+    float min = 0.25;
+    float max = 0.8;
+
+    set_rand_seed(1000);
+
+
+    // the spheres
+
+    Matte* matte_ptr1 = new Matte;
+    matte_ptr1->setKa(ka);	
+    matte_ptr1->setKd(kd);
+    matte_ptr1->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));				
+    Sphere*	sphere_ptr1 = new Sphere(Point3D(5, 3, 0), 30); 
+    sphere_ptr1->setMaterial(matte_ptr1);	   							
+    addObject(sphere_ptr1);
+
+    Matte* matte_ptr2 = new Matte;
+    matte_ptr2->setKa(ka);	
+    matte_ptr2->setKd(kd);
+    matte_ptr2->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr2 = new Sphere(Point3D(45, -7, -60), 20); 
+    sphere_ptr2->setMaterial(matte_ptr2);								
+    addObject(sphere_ptr2);
+
+
+    Matte* matte_ptr3 = new Matte;
+    matte_ptr3->setKa(ka);	
+    matte_ptr3->setKd(kd);
+    matte_ptr3->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));	
+    Sphere*	sphere_ptr3 = new Sphere(Point3D(40, 43, -100), 17); 
+    sphere_ptr3->setMaterial(matte_ptr3);								
+    addObject(sphere_ptr3);
+
+    Matte* matte_ptr4 = new Matte;
+    matte_ptr4->setKa(ka);	
+    matte_ptr4->setKd(kd);
+    matte_ptr4->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr4 = new Sphere(Point3D(-20, 28, -15), 20); 
+    sphere_ptr4->setMaterial(matte_ptr4);								
+    addObject(sphere_ptr4);
+
+    Matte* matte_ptr5 = new Matte;
+    matte_ptr5->setKa(ka);	
+    matte_ptr5->setKd(kd);
+    matte_ptr5->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr5 = new Sphere(Point3D(-25, -7, -35), 27); 			
+    sphere_ptr5->setMaterial(matte_ptr5);								
+    addObject(sphere_ptr5);
+
+    Matte* matte_ptr6 = new Matte;
+    matte_ptr6->setKa(ka);	
+    matte_ptr6->setKd(kd);
+    matte_ptr6->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr6 = new Sphere(Point3D(20, -27, -35), 25); 
+    sphere_ptr6->setMaterial(matte_ptr6);								
+    addObject(sphere_ptr6);
+
+    Matte* matte_ptr7 = new Matte;
+    matte_ptr7->setKa(ka);	
+    matte_ptr7->setKd(kd);
+    matte_ptr7->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr7 = new Sphere(Point3D(35, 18, -35), 22); 
+    sphere_ptr7->setMaterial(matte_ptr7);   							
+    addObject(sphere_ptr7);
+
+    Matte* matte_ptr8 = new Matte;
+    matte_ptr8->setKa(ka);	
+    matte_ptr8->setKd(kd);
+    matte_ptr8->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr8 = new Sphere(Point3D(-57, -17, -50), 15);  
+    sphere_ptr8->setMaterial(matte_ptr8);								
+    addObject(sphere_ptr8);
+
+    Matte* matte_ptr9 = new Matte;
+    matte_ptr9->setKa(ka);	
+    matte_ptr9->setKd(kd);
+    matte_ptr9->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr9 = new Sphere(Point3D(-47, 16, -80), 23); 
+    sphere_ptr9->setMaterial(matte_ptr9);								
+    addObject(sphere_ptr9);
+
+    Matte* matte_ptr10 = new Matte;
+    matte_ptr10->setKa(ka);	
+    matte_ptr10->setKd(kd);
+    matte_ptr10->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));	
+    Sphere*	sphere_ptr10 = new Sphere(Point3D(-15, -32, -60), 22); 
+    sphere_ptr10->setMaterial(matte_ptr10);     						
+    addObject(sphere_ptr10);
+
+    Matte* matte_ptr11 = new Matte;
+    matte_ptr11->setKa(ka);	
+    matte_ptr11->setKd(kd);
+    matte_ptr11->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr11 = new Sphere(Point3D(-35, -37, -80), 22); 
+    sphere_ptr11->setMaterial(matte_ptr11);							
+    addObject(sphere_ptr11);
+
+    Matte* matte_ptr12 = new Matte;
+    matte_ptr12->setKa(ka);	
+    matte_ptr12->setKd(kd);
+    matte_ptr12->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr12 = new Sphere(Point3D(10, 43, -80), 22); 
+    sphere_ptr12->setMaterial(matte_ptr12);							
+    addObject(sphere_ptr12);
+
+    Matte* matte_ptr13 = new Matte;
+    matte_ptr13->setKa(ka);	
+    matte_ptr13->setKd(kd);
+    matte_ptr13->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));		
+    Sphere*	sphere_ptr13 = new Sphere(Point3D(30, -7, -80), 10); 
+    sphere_ptr13->setMaterial(matte_ptr13);
+    addObject(sphere_ptr13);											
+
+    Matte* matte_ptr14 = new Matte;
+    matte_ptr14->setKa(ka);	
+    matte_ptr14->setKd(kd);
+    matte_ptr14->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));	
+    Sphere*	sphere_ptr14 = new Sphere(Point3D(-40, 48, -110), 18); 
+    sphere_ptr14->setMaterial(matte_ptr14); 							
+    addObject(sphere_ptr14);
+
+    Matte* matte_ptr15 = new Matte;
+    matte_ptr15->setKa(ka);	
+    matte_ptr15->setKd(kd);
+    matte_ptr15->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));	
+    Sphere*	sphere_ptr15 = new Sphere(Point3D(-10, 53, -120), 18); 
+    sphere_ptr15->setMaterial(matte_ptr15); 							
+    addObject(sphere_ptr15);
+
+    Matte* matte_ptr16 = new Matte;
+    matte_ptr16->setKa(ka);	
+    matte_ptr16->setKd(kd);
+    matte_ptr16->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr16 = new Sphere(Point3D(-55, -52, -100), 10); 
+    sphere_ptr16->setMaterial(matte_ptr16);							
+    addObject(sphere_ptr16);
+
+    Matte* matte_ptr17 = new Matte;
+    matte_ptr17->setKa(ka);	
+    matte_ptr17->setKd(kd);
+    matte_ptr17->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr17 = new Sphere(Point3D(5, -52, -100), 15); 		
+    sphere_ptr17->setMaterial(matte_ptr17);							
+    addObject(sphere_ptr17);
+
+    Matte* matte_ptr18 = new Matte;
+    matte_ptr18->setKa(ka);	
+    matte_ptr18->setKd(kd);
+    matte_ptr18->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr18 = new Sphere(Point3D(-20, -57, -120), 15); 
+    sphere_ptr18->setMaterial(matte_ptr18);							
+    addObject(sphere_ptr18);
+
+    Matte* matte_ptr19 = new Matte;
+    matte_ptr19->setKa(ka);	
+    matte_ptr19->setKd(kd);
+    matte_ptr19->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr19 = new Sphere(Point3D(55, -27, -100), 17); 
+    sphere_ptr19->setMaterial(matte_ptr19);							
+    addObject(sphere_ptr19);
+
+    Matte* matte_ptr20 = new Matte;
+    matte_ptr20->setKa(ka);	
+    matte_ptr20->setKd(kd);
+    matte_ptr20->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr20 = new Sphere(Point3D(50, -47, -120), 15); 
+    sphere_ptr20->setMaterial(matte_ptr20);							
+    addObject(sphere_ptr20);
+
+    Matte* matte_ptr21 = new Matte;
+    matte_ptr21->setKa(ka);	
+    matte_ptr21->setKd(kd);
+    matte_ptr21->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min)); 	
+    Sphere*	sphere_ptr21 = new Sphere(Point3D(70, -42, -150), 10); 
+    sphere_ptr21->setMaterial(matte_ptr21);							
+    addObject(sphere_ptr21);
+
+    Matte* matte_ptr22 = new Matte;
+    matte_ptr22->setKa(ka);	
+    matte_ptr22->setKd(kd);
+    matte_ptr22->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr22 = new Sphere(Point3D(5, 73, -130), 12); 
+    sphere_ptr22->setMaterial(matte_ptr22);							
+    addObject(sphere_ptr22);
+
+    Matte* matte_ptr23 = new Matte;
+    matte_ptr23->setKa(ka);	
+    matte_ptr23->setKd(kd);
+    matte_ptr23->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr23 = new Sphere(Point3D(66, 21, -130), 13); 			
+    sphere_ptr23->setMaterial(matte_ptr23);							
+    addObject(sphere_ptr23);	
+
+    Matte* matte_ptr24 = new Matte;
+    matte_ptr24->setKa(ka);	
+    matte_ptr24->setKd(kd);
+    matte_ptr24->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));  
+    Sphere*	sphere_ptr24 = new Sphere(Point3D(72, -12, -140), 12); 
+    sphere_ptr24->setMaterial(matte_ptr24);							
+    addObject(sphere_ptr24);
+
+    Matte* matte_ptr25 = new Matte;
+    matte_ptr25->setKa(ka);	
+    matte_ptr25->setKd(kd);
+    matte_ptr25->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr25 = new Sphere(Point3D(64, 5, -160), 11); 			
+    sphere_ptr25->setMaterial(matte_ptr25);					 		
+    addObject(sphere_ptr25);
+
+    Matte* matte_ptr26 = new Matte;
+    matte_ptr26->setKa(ka);	
+    matte_ptr26->setKd(kd);
+    matte_ptr26->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr26 = new Sphere(Point3D(55, 38, -160), 12); 		
+    sphere_ptr26->setMaterial(matte_ptr26);							
+    addObject(sphere_ptr26);
+
+    Matte* matte_ptr27 = new Matte;
+    matte_ptr27->setKa(ka);	
+    matte_ptr27->setKd(kd);
+    matte_ptr27->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr27 = new Sphere(Point3D(-73, -2, -160), 12); 		
+    sphere_ptr27->setMaterial(matte_ptr27);							
+    addObject(sphere_ptr27);
+
+    Matte* matte_ptr28 = new Matte;
+    matte_ptr28->setKa(ka);	
+    matte_ptr28->setKd(kd);
+    matte_ptr28->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr28 = new Sphere(Point3D(30, -62, -140), 15); 
+    sphere_ptr28->setMaterial(matte_ptr28); 							
+    addObject(sphere_ptr28);
+
+    Matte* matte_ptr29 = new Matte;
+    matte_ptr29->setKa(ka);	
+    matte_ptr29->setKd(kd);
+    matte_ptr29->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr29 = new Sphere(Point3D(25, 63, -140), 15); 
+    sphere_ptr29->setMaterial(matte_ptr29);							
+    addObject(sphere_ptr29);
+
+    Matte* matte_ptr30 = new Matte;
+    matte_ptr30->setKa(ka);	
+    matte_ptr30->setKd(kd);
+    matte_ptr30->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr30 = new Sphere(Point3D(-60, 46, -140), 15);  
+    sphere_ptr30->setMaterial(matte_ptr30); 							
+    addObject(sphere_ptr30);
+
+    Matte* matte_ptr31 = new Matte;
+    matte_ptr31->setKa(ka);	
+    matte_ptr31->setKd(kd);
+    matte_ptr31->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr31 = new Sphere(Point3D(-30, 68, -130), 12); 
+    sphere_ptr31->setMaterial(matte_ptr31); 							
+    addObject(sphere_ptr31);
+
+    Matte* matte_ptr32 = new Matte;
+    matte_ptr32->setKa(ka);	
+    matte_ptr32->setKd(kd);
+    matte_ptr32->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr32 = new Sphere(Point3D(58, 56, -180), 11);   
+    sphere_ptr32->setMaterial(matte_ptr32);							
+    addObject(sphere_ptr32);
+
+    Matte* matte_ptr33 = new Matte;
+    matte_ptr33->setKa(ka);	
+    matte_ptr33->setKd(kd);
+    matte_ptr33->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr33 = new Sphere(Point3D(-63, -39, -180), 11); 
+    sphere_ptr33->setMaterial(matte_ptr33);							 
+    addObject(sphere_ptr33);
+
+    Matte* matte_ptr34 = new Matte;
+    matte_ptr34->setKa(ka);	
+    matte_ptr34->setKd(kd);
+    matte_ptr34->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr34 = new Sphere(Point3D(46, 68, -200), 10); 	
+    sphere_ptr34->setMaterial(matte_ptr34);							
+    addObject(sphere_ptr34);
+
+    Matte* matte_ptr35 = new Matte;
+    matte_ptr35->setKa(ka);	
+    matte_ptr35->setKd(kd);
+    matte_ptr35->setCd(min + rand_float() * (max - min), min + rand_float() * (max - min), min + rand_float() * (max - min));
+    Sphere*	sphere_ptr35 = new Sphere(Point3D(-3, -72, -130), 12); 
+    sphere_ptr35->setMaterial(matte_ptr35);							
+    addObject(sphere_ptr35);
+
+
+}

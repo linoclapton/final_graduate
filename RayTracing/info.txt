@@ -1,0 +1,7 @@
+Vendor        : Microsoft Corporation
+Render        : GDI Generic
+Opengl Version: -858993460.-858993460
+Verify Type   : UNKNOWN or Intel
+GPU MEMORY    : 0MB
+Volume Render : true
+Any cut       : false

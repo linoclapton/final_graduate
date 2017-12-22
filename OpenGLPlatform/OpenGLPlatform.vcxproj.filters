@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{a4988537-159c-49b2-bf99-c07f3fb65bbf}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{ad704628-973e-4b76-aad4-7bbb42dad1b1}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{fe216106-0b9a-4bb7-8724-ed1cad614160}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures">
+      <UniqueIdentifier>{fb3d364f-09b1-445e-a9c5-ef504d7de0ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Texture">
+      <UniqueIdentifier>{87be935d-602a-45d3-9b9e-f8e95c8e1c6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Base">
+      <UniqueIdentifier>{eb2ccbd1-a1d4-43af-a827-68c2c40b5272}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FBO">
+      <UniqueIdentifier>{9e45c72b-7243-4f2d-abe8-d3742e41ea59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Texture\shader">
+      <UniqueIdentifier>{ff33ddeb-8987-4052-b288-671dc343d5fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FBO\shader">
+      <UniqueIdentifier>{8309ccac-a045-4ef1-833e-7b89039158c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Light">
+      <UniqueIdentifier>{7cac9f4a-25ed-41f9-9439-2ce4bab2315c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Light\shader">
+      <UniqueIdentifier>{095311a8-f39b-490d-bf6f-1fda97c63317}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OldAPI">
+      <UniqueIdentifier>{f4677b76-e60d-476d-a844-1fbde4af7b19}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMainWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MyMainWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_MyMainWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_mymainwindow.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_RenderPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_RenderPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureTest.cpp">
+      <Filter>Header Files\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="FBO.cpp">
+      <Filter>Header Files\FBO</Filter>
+    </ClCompile>
+    <ClCompile Include="LightModel.cpp">
+      <Filter>Header Files\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseAPI.cpp">
+      <Filter>Header Files\OldAPI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="MyMainWindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mymainwindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mymainwindow.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="RenderPanel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\ui_mymainwindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureTest.h">
+      <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderBase.h">
+      <Filter>Header Files\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="FBO.h">
+      <Filter>Header Files\FBO</Filter>
+    </ClInclude>
+    <ClInclude Include="LightModel.h">
+      <Filter>Header Files\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseAPI.h">
+      <Filter>Header Files\OldAPI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="textFS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="textVS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fragment2.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fragment_texture.glsl">
+      <Filter>Header Files\Texture\shader</Filter>
+    </None>
+    <None Include="vertex_texture.glsl">
+      <Filter>Header Files\Texture\shader</Filter>
+    </None>
+    <None Include="fragment_model.glsl">
+      <Filter>Header Files\FBO\shader</Filter>
+    </None>
+    <None Include="vertex_model.glsl">
+      <Filter>Header Files\FBO\shader</Filter>
+    </None>
+    <None Include="fragment_fbo.glsl">
+      <Filter>Header Files\FBO\shader</Filter>
+    </None>
+    <None Include="vertex_fbo.glsl">
+      <Filter>Header Files\FBO\shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="container.jpg">
+      <Filter>Textures</Filter>
+    </Image>
+    <Image Include="awesomeface.png">
+      <Filter>Textures</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

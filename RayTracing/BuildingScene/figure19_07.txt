@@ -1,0 +1,76 @@
+void World::build(){
+    int num_samples = 16;   		
+
+    Sampler* sampler_ptr = new MultiJitteredSampler(num_samples);
+    vp.maxDepth = 0;
+    vp.hres = 400;
+    vp.vres = 400;
+    vp.sampleCount = num_samples;
+    vp.sampler = sampler_ptr;	
+
+    background = RGBColor(0.0);
+    imageWidth = vp.hres;
+    imageHeight = vp.vres;
+    imageBuffer = new RGBColor[imageHeight*imageWidth];
+
+    tracer = new RayCast(this);
+
+    PinHole* camera = new PinHole;
+    camera->setEye(25, 200, 100);
+    camera->setLookAt(-0.5, 0, 0); 	
+    camera->setDistance(8000);          
+    camera->computeUVW();     
+    this->camera = camera; 
+
+    Ambient* ambient_ptr = new Ambient;
+    ambient_ptr->scaleRadiance(0.0);
+    ambient_ptr->setColor(0.0);
+    ambient_ptr->setShadow(false);
+    ambient = ambient_ptr;
+
+
+    PointLight* light_ptr1 = new PointLight;
+    light_ptr1->setLocation(1, 5, 0);
+    light_ptr1->scaleRadiance(3.0);
+    light_ptr1->setShadow(true);
+    addLight(light_ptr1);
+
+
+    // yellow triangle
+
+    Matte* matte_ptr1 = new Matte;			
+    matte_ptr1->setKa(0.25); 
+    matte_ptr1->setKd(0.75);
+    matte_ptr1->setCd(1, 1, 0);
+
+    Triangle* triangle_ptr1 = new Triangle(Point3D(2, 0.5, 5), Point3D(2, 1.5, -5), Point3D(-1, 0, -4)); 
+    triangle_ptr1->setMaterial(matte_ptr1);
+    addObject(triangle_ptr1);
+
+
+    // dark green triangle (transformed)
+
+    Matte* matte_ptr2 = new Matte;			
+    matte_ptr2->setKa(0.25); 
+    matte_ptr2->setKd(0.75);
+    matte_ptr2->setCd(0.0, 0.5, 0.41);
+
+    Instance* triangle_ptr2 = new Instance(new Triangle(Point3D(2, 1, 5), Point3D(2, 0.5, -5), Point3D(-1, -1, -4))); 
+    triangle_ptr2->rotateY(120);
+    triangle_ptr2->setMaterial(matte_ptr2);
+    addObject(triangle_ptr2);
+
+
+    // brown triangle (transformed)
+
+    Matte* matte_ptr3 = new Matte;			
+    matte_ptr3->setKa(0.25); 
+    matte_ptr3->setKd(0.75);
+    matte_ptr3->setCd(0.71, 0.40, 0.16);
+
+    Instance* triangle_ptr3 = new Instance(new Triangle(Point3D(2, 0, 5), Point3D(2, 1, -5), Point3D(-1, 0, -4))); 
+    triangle_ptr3->rotateY(240);
+    triangle_ptr3->setMaterial(matte_ptr3);
+    addObject(triangle_ptr3);
+
+}

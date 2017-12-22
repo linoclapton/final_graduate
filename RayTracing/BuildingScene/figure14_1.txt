@@ -1,0 +1,41 @@
+    int num_samples = 1;
+
+    Ambient* ambient_ptr = new Ambient;
+    ambient_ptr->scaleRadiance(1.0);
+    this->ambient = ambient_ptr;
+
+    PinHole* pinhole_ptr = new PinHole;
+    pinhole_ptr->setEye(0, 0, 500);
+    pinhole_ptr->setLookAt(-5, 0, 0); 
+    pinhole_ptr->setDistance(850.0);
+    pinhole_ptr->computeUVW();     
+    camera = pinhole_ptr;
+
+    PointLight* light_ptr2 = new PointLight;
+    light_ptr2->setLocation(100, 50, 150);
+    light_ptr2->scaleRadiance(3.0); 
+    addLight(light_ptr2);
+
+    Matte* matte_ptr1 = new Matte;
+    matte_ptr1->setKa(0.25);	
+    matte_ptr1->setKd(0.65);
+    matte_ptr1->setCd(1, 1, 0);	  				// yellow	
+    Sphere*	sphere_ptr1 = new Sphere(Point3D(10, -5, 0), 27); 
+    sphere_ptr1->setMaterial(matte_ptr1);	   							
+    addObject(sphere_ptr1);
+
+    Matte* matte_ptr2 = new Matte;
+    matte_ptr2->setKa(0.15);	
+    matte_ptr2->setKd(0.85);
+    matte_ptr2->setCd(0.71, 0.40, 0.16);   		// brown
+    Sphere*	sphere_ptr2 = new Sphere(Point3D(-25, 10, -35), 27); 			
+    sphere_ptr2->setMaterial(matte_ptr2);							
+    addObject(sphere_ptr2);
+
+    Matte* matte_ptr3 = new Matte;
+    matte_ptr3->setKa(0.15);	
+    matte_ptr3->setKd(0.5);
+    matte_ptr3->setCd(0, 0.4, 0.2);				// dark green
+    Plane* plane_ptr = new Plane(Point3D(0, 0, -50), Normal(0, 0, 1)); 
+    plane_ptr->setMaterial(matte_ptr3);								
+    addObject(plane_ptr);

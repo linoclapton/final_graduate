@@ -1,0 +1,53 @@
+void World::build(){
+    int num_samples = 16;   		
+
+    Sampler* sampler_ptr = new MultiJitteredSampler(num_samples);
+    vp.maxDepth = 0;
+    vp.hres = 400;
+    vp.vres = 400;
+    vp.sampleCount = num_samples;
+    vp.sampler = sampler_ptr;	
+
+    background = RGBColor(0.0);
+    imageWidth = vp.hres;
+    imageHeight = vp.vres;
+    imageBuffer = new RGBColor[imageHeight*imageWidth];
+
+    tracer = new RayCast(this);
+
+    PinHole* camera = new PinHole;
+    camera->setEye(100,0,100);
+    camera->setLookAt(0.0, 1.0 , 0); 	
+    camera->setDistance(8000);          
+    camera->computeUVW();     
+    this->camera = camera; 
+
+    Ambient* ambient_ptr = new Ambient;
+    ambient_ptr->scaleRadiance(0.0);
+    ambient_ptr->setColor(0.0);
+    ambient_ptr->setShadow(false);
+    ambient = ambient_ptr;
+
+
+    PointLight* light_ptr1 = new PointLight;
+    light_ptr1->setLocation(50, 50, 1);
+    light_ptr1->scaleRadiance(3.0);
+    light_ptr1->setShadow(true);
+    addLight(light_ptr1);
+
+
+    Phong* phong_ptr = new Phong;			
+    phong_ptr->setCd(0.75);  
+    phong_ptr->setKa(0.25); 
+    phong_ptr->setKd(0.8);
+    phong_ptr->setKs(0.15); 
+    phong_ptr->setExp(50.0);  
+
+    Instance* ellipsoid_ptr = new Instance(new Sphere);
+    ellipsoid_ptr->setMaterial(phong_ptr);
+    ellipsoid_ptr->scale(2, 3, 1);
+    ellipsoid_ptr->rotateX(-45);
+    ellipsoid_ptr->translate(0, 1, 0);
+    addObject(ellipsoid_ptr);
+
+}

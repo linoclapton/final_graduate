@@ -1,0 +1,511 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{03dd0ea7-6380-4254-8677-585a3dc8a3f6}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{93678a06-ebb5-454a-a483-d32296c5a2bd}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{369d2c55-38c4-4375-9084-a09433805846}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{3d22c9c7-1d49-4a4d-87da-79c1936ceac4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\others">
+      <UniqueIdentifier>{5decadc8-5b74-4e7e-93f1-768fca64923e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MeshModel">
+      <UniqueIdentifier>{e900d86f-c5f5-4b8f-950f-55f5a57c4ac9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MeshModel">
+      <UniqueIdentifier>{46d988ba-029d-4a5a-994c-17d9f6ff9dc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GraphCut">
+      <UniqueIdentifier>{83d60129-4354-4e51-a7b7-e2dbe63dea2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GraphCut">
+      <UniqueIdentifier>{ba9d4189-9142-4b69-be93-8bfbb9e94821}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\GradientBased">
+      <UniqueIdentifier>{ea86a96c-7e6d-495b-a586-2b5af0dab2dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GradientBased">
+      <UniqueIdentifier>{7765480b-7ade-4118-bd18-ebaa7730cdd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backup">
+      <UniqueIdentifier>{4fa4b8a7-6b30-4c88-9751-6432019622c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GradientBased">
+      <UniqueIdentifier>{9971408c-da15-410e-a1af-9e90464d3c38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\HalfAngleSlice">
+      <UniqueIdentifier>{339b2d78-c8a4-4740-a5c5-24ff4f279fe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\HalfAngleSlice">
+      <UniqueIdentifier>{793773e5-0897-4d37-9ebe-e1974c512ce7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\IPSVI">
+      <UniqueIdentifier>{5aca8f20-5d12-4371-a4e2-c8898b37ce46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\IPSVI">
+      <UniqueIdentifier>{f30750ea-451d-4a4a-b861-375711147bd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\HalfAngleSlice">
+      <UniqueIdentifier>{3e4c172c-d68c-4393-925c-fa04f00d5c66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\IPSVI">
+      <UniqueIdentifier>{c9b768f5-2638-4aa2-9a65-ea8d563046e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FGI">
+      <UniqueIdentifier>{f2cf549b-ce80-4ed2-bfe5-ff0ca6dea7e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FGI">
+      <UniqueIdentifier>{7c1b1d89-6ae1-4686-be44-a7a48d4d8064}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CUDA">
+      <UniqueIdentifier>{3d28f4c6-6920-443c-a30e-10922e50138c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\helper">
+      <UniqueIdentifier>{5a83cc3e-94a1-4709-8c23-5feea93c80c5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Present.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Present.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_present.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MyPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_MyPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MySlider.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_MySlider.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_VolumeRenderPanel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_VolumeRenderPanel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QPropertyItem.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QPropertyItem.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QRenderHoverPoints.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QRenderHoverPoints.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QTransferFunction1DItem.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QTransferFunction1DItem.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_TransferFunction1DWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_TransferFunction1DWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="MyPanel.cpp">
+      <Filter>Source Files\MeshModel</Filter>
+    </ClCompile>
+    <ClCompile Include="MySlider.cpp">
+      <Filter>Source Files\MeshModel</Filter>
+    </ClCompile>
+    <ClCompile Include="Torus.cpp">
+      <Filter>Source Files\MeshModel</Filter>
+    </ClCompile>
+    <ClCompile Include="graphcut.cpp">
+      <Filter>Source Files\GraphCut</Filter>
+    </ClCompile>
+    <ClCompile Include="AVSTable2D.cpp">
+      <Filter>Source Files\GradientBased</Filter>
+    </ClCompile>
+    <ClCompile Include="QRenderHoverPoints.cpp">
+      <Filter>Source Files\GradientBased</Filter>
+    </ClCompile>
+    <ClCompile Include="QTransferFunction1DItem.cpp">
+      <Filter>Source Files\GradientBased</Filter>
+    </ClCompile>
+    <ClCompile Include="RunGuard.cpp">
+      <Filter>Source Files\GradientBased</Filter>
+    </ClCompile>
+    <ClCompile Include="SLIC.cpp">
+      <Filter>Source Files\GradientBased</Filter>
+    </ClCompile>
+    <ClCompile Include="TransferFunction1DWidget.cpp">
+      <Filter>Source Files\GradientBased</Filter>
+    </ClCompile>
+    <ClCompile Include="VolumeRenderPanel.cpp">
+      <Filter>Source Files\GradientBased</Filter>
+    </ClCompile>
+    <ClCompile Include="Present.cpp">
+      <Filter>Source Files\GradientBased</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_HalfAngleSlice.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_HalfAngleSlice.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="HalfAngleSlice.cpp">
+      <Filter>Source Files\HalfAngleSlice</Filter>
+    </ClCompile>
+    <ClCompile Include="HalfAngleSliceGL.cpp">
+      <Filter>Source Files\HalfAngleSlice</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_HalfAngleSliceGL.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_HalfAngleSliceGL.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="TorusWindow.cpp">
+      <Filter>Source Files\MeshModel</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_TorusWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_TorusWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_IPSVI.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_IPSVI.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="IPSVI.cpp">
+      <Filter>Source Files\IPSVI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_IPSVIGL.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_IPSVIGL.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="IPSVIGL.cpp">
+      <Filter>Source Files\IPSVI</Filter>
+    </ClCompile>
+    <ClCompile Include="GIDVR.cpp">
+      <Filter>Source Files\FGI</Filter>
+    </ClCompile>
+    <ClCompile Include="GIDVRGL.cpp">
+      <Filter>Source Files\FGI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GIDVR.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GIDVR.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GIDVRGL.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GIDVRGL.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="view.cpp">
+      <Filter>Source Files\HalfAngleSlice</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="present.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="present.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyPanel.h">
+      <Filter>Header Files\MeshModel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MySlider.h">
+      <Filter>Header Files\MeshModel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="TorusWidget.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="HalfAngleSlice.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Present.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QPropertyItem.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QRenderHoverPoints.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QTransferFunction1DItem.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </CustomBuild>
+    <CustomBuild Include="TransferFunction1DWidget.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </CustomBuild>
+    <CustomBuild Include="VolumeRenderPanel.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </CustomBuild>
+    <CustomBuild Include="HalfAngleSlice.h">
+      <Filter>Header Files\HalfAngleSlice</Filter>
+    </CustomBuild>
+    <CustomBuild Include="HalfAngleSliceGL.h">
+      <Filter>Header Files\HalfAngleSlice</Filter>
+    </CustomBuild>
+    <CustomBuild Include="TorusWindow.h">
+      <Filter>Header Files\MeshModel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="IPSVI.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="IPSVI.h">
+      <Filter>Header Files\IPSVI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="IPSVIGL.h">
+      <Filter>Header Files\IPSVI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FGI_DVR.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GIDVR.h">
+      <Filter>Header Files\FGI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GIDVRGL.h">
+      <Filter>Header Files\FGI</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\ui_present.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Torus.h">
+      <Filter>Header Files\MeshModel</Filter>
+    </ClInclude>
+    <ClInclude Include="graphcut.h">
+      <Filter>Header Files\GraphCut</Filter>
+    </ClInclude>
+    <ClInclude Include="bit_vector.h">
+      <Filter>Header Files\GraphCut</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_TorusWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_HalfAngleSlice.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AVSTable2D.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </ClInclude>
+    <ClInclude Include="MarkPoint.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </ClInclude>
+    <ClInclude Include="mat2bmp.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </ClInclude>
+    <ClInclude Include="RunGuard.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </ClInclude>
+    <ClInclude Include="Serializable.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </ClInclude>
+    <ClInclude Include="SLIC.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </ClInclude>
+    <ClInclude Include="VolumeObject.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </ClInclude>
+    <ClInclude Include="GradientBasedStart.h">
+      <Filter>Header Files\GradientBased</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_IPSVI.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_FGI_DVR.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helper_cuda.h">
+      <Filter>Header Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="helper_functions.h">
+      <Filter>Header Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="exception.h">
+      <Filter>Header Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="helper_image.h">
+      <Filter>Header Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="helper_string.h">
+      <Filter>Header Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="helper_timer.h">
+      <Filter>Header Files\helper</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="compute1.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="fragment.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="fragment1.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="geo.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="tcs.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="tes.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="textFS.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="textVS.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="vertex.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="vertex1.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="pre_volume_fragment.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="pre_volume_vertex.glsl">
+      <Filter>Shaders\others</Filter>
+    </None>
+    <None Include="compute.glsl">
+      <Filter>Shaders\GradientBased</Filter>
+    </None>
+    <None Include="fbo_fragment.glsl">
+      <Filter>Shaders\GradientBased</Filter>
+    </None>
+    <None Include="fbo_vertex.glsl">
+      <Filter>Shaders\GradientBased</Filter>
+    </None>
+    <None Include="fragment_plane.glsl">
+      <Filter>Shaders\GradientBased</Filter>
+    </None>
+    <None Include="vertex_plane.glsl">
+      <Filter>Shaders\GradientBased</Filter>
+    </None>
+    <None Include="volume_fragment.glsl">
+      <Filter>Shaders\GradientBased</Filter>
+    </None>
+    <None Include="volume_vertex.glsl">
+      <Filter>Shaders\GradientBased</Filter>
+    </None>
+    <None Include="voreen.glsl">
+      <Filter>Shaders\GradientBased</Filter>
+    </None>
+    <None Include="IPSVI_vertex.glsl">
+      <Filter>Shaders\IPSVI</Filter>
+    </None>
+    <None Include="IPSVI_fragment.glsl">
+      <Filter>Shaders\IPSVI</Filter>
+    </None>
+    <None Include="vertex_texture.glsl">
+      <Filter>Shaders\HalfAngleSlice</Filter>
+    </None>
+    <None Include="frag_texture.glsl">
+      <Filter>Shaders\HalfAngleSlice</Filter>
+    </None>
+    <None Include="frag_pick.glsl">
+      <Filter>Shaders\HalfAngleSlice</Filter>
+    </None>
+    <None Include="frag_grid.glsl">
+      <Filter>Shaders\HalfAngleSlice</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="color.txt">
+      <Filter>input</Filter>
+    </Text>
+    <Text Include="opacity.txt">
+      <Filter>input</Filter>
+    </Text>
+    <Text Include="opacity2.txt">
+      <Filter>input</Filter>
+    </Text>
+    <Text Include="color2.txt">
+      <Filter>input</Filter>
+    </Text>
+    <Text Include="opacity3.txt">
+      <Filter>input</Filter>
+    </Text>
+    <Text Include="color3.txt">
+      <Filter>input</Filter>
+    </Text>
+    <Text Include="color4.txt">
+      <Filter>input</Filter>
+    </Text>
+    <Text Include="main_backup.txt">
+      <Filter>Source Files\backup</Filter>
+    </Text>
+    <Text Include="main_present.txt">
+      <Filter>Source Files\backup</Filter>
+    </Text>
+    <Text Include="color_IPSVI.txt">
+      <Filter>input</Filter>
+    </Text>
+    <Text Include="opacity_IPSVI.txt">
+      <Filter>input</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="cgSolver.cu">
+      <Filter>CUDA</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>

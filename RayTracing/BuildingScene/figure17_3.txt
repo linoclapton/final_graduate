@@ -1,0 +1,52 @@
+void World::build(){
+    int num_samples = 1;   // for Figure 17.3(a)
+    //	int num_samples = 256;  // for Figure 17.3(b)
+
+    vp.hres = 400;	  		
+    vp.vres = 400;
+    vp.pixelSize = 1;
+    MultiJitteredSampler* sampler_ptr = new MultiJitteredSampler(num_samples); 
+    vp.setSampler(sampler_ptr);  
+    vp.sampler->mapToHemisphere(1);
+    background = white;
+    imageWidth = vp.hres;
+    imageHeight = vp.vres;
+    imageBuffer = new RGBColor[imageHeight*imageWidth];
+    tracer = new RayCast(this);
+
+
+    /*Ambient* ambient_ptr = new Ambient;
+    ambient_ptr->scaleRadiance(1.0);
+    ambient = ambient_ptr;*/					// for Figure 17.3(a)
+
+    AmbientOccluder* occluder_ptr = new AmbientOccluder;
+    occluder_ptr->scaleRadiance(1.0);
+    occluder_ptr->setMinAmount(0.0);
+    occluder_ptr->setShadow(true);
+    occluder_ptr->setSampler(sampler_ptr);
+    ambient = occluder_ptr;				// for Figure 17.3(b)
+    
+
+
+    PinHole* pinhole_ptr = new PinHole;
+    pinhole_ptr->setEye(25, 20, 45);
+    pinhole_ptr->setLookAt(0, 1, 0); 
+    pinhole_ptr->setDistance(5000);	
+    pinhole_ptr->computeUVW();     
+    camera = pinhole_ptr;
+
+    // sphere
+
+
+    // ground plane
+
+    Matte* matte_ptr2 = new Matte;			
+    matte_ptr2->setKa(0.75);		
+    matte_ptr2->setKd(0);
+    matte_ptr2->setCd(white);       
+
+    Plane* plane_ptr = new Plane(Point3D(0), Normal(0, 1, 0));
+    plane_ptr->setMaterial(matte_ptr2);
+    addObject(plane_ptr);	
+
+}

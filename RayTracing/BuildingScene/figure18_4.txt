@@ -1,0 +1,94 @@
+void World::build(){
+    int num_samples = 256;   		// for Figure 18.4(a)
+    //	int num_samples = 100;   	// for Figure 18.4(b) & (c)
+
+    Sampler* sampler_ptr = new MultiJitteredSampler(num_samples);
+    vp.maxDepth = 0;
+    vp.hres = 600;
+    vp.vres = 600;
+    vp.sampleCount = num_samples;
+    vp.sampler = sampler_ptr;	
+
+    background = RGBColor(0.5);
+    imageWidth = vp.hres;
+    imageHeight = vp.vres;
+    imageBuffer = new RGBColor[imageHeight*imageWidth];
+
+    tracer = new AreaLighting(this);
+
+    PinHole* camera = new PinHole;
+    camera->setEye(-20, 10, 20);
+    camera->setLookAt(0, 2, 0); 	
+    camera->setDistance(1080);          
+    camera->computeUVW();     
+    this->camera = camera; 
+
+    Ambient* ambient_ptr = new Ambient;
+    ambient_ptr->scaleRadiance(0.0);
+    ambient_ptr->setColor(0.0);
+    ambient_ptr->setShadow(false);
+    ambient = ambient_ptr;
+
+    Emissive* emissive_ptr = new Emissive;
+    emissive_ptr->scaleRadiance(40.0);
+    emissive_ptr->setCe(1.0,1.0,1.0);
+
+
+    // define a rectangle for the rectangular light
+
+    float width = 4.0;				// for Figure 18.4(a) & (b)
+    float height = 4.0;
+    //	float width = 2.0;				// for Figure 18.4(c)
+    //	float height = 2.0;
+    Point3D center(0.0, 7.0, -7.0);	// center of each area light (rectangular, disk, and spherical)
+    Point3D p0(-0.5 * width, center.y - 0.5 * height, center.z);
+    Vector3D a(width, 0.0, 0.0);
+    Vector3D b(0.0, height, 0.0);
+    Normal normal(0, 0, 1);
+
+    Rectangle* rectangle_ptr = new Rectangle(p0, a, b, normal);
+    rectangle_ptr->setMaterial(emissive_ptr);
+    rectangle_ptr->setSampler(sampler_ptr);
+    //TODO:rectangle_ptr->setShadow(false);
+    addObject(rectangle_ptr);
+
+
+    AreaLight* area_light_ptr = new AreaLight;
+    area_light_ptr->setObject(rectangle_ptr);
+    area_light_ptr->setMaterial(emissive_ptr);
+    area_light_ptr->setShadow(true);
+    addLight(area_light_ptr);
+
+
+    // Four axis aligned boxes
+
+    float box_width 	= 1.0; 		// x dimension
+    float box_depth 	= 1.0; 		// z dimension
+    float box_height 	= 4.5; 		// y dimension
+    float gap			= 3.0; 
+
+    Matte* matte_ptr1 = new Matte;			
+    matte_ptr1->setKa(0.25); 
+    matte_ptr1->setKd(0.75);
+    matte_ptr1->setCd(0.4, 0.7, 0.4);     // green
+
+    /*Plane* plane_ptr2 = new Plane(Point3D(0,0,0), Normal(0, 0, 1)); 
+    plane_ptr2->setMaterial(matte_ptr1);
+    addObject(plane_ptr2);	*/
+
+    Sphere* sphere_ptr = new Sphere (Point3D(0, 2, 0), 2);  
+    sphere_ptr->setMaterial(matte_ptr1);
+    addObject(sphere_ptr);
+
+
+    Matte* matte_ptr2 = new Matte;			
+    matte_ptr2->setKa(0.1); 
+    matte_ptr2->setKd(0.90);
+    matte_ptr2->setCd(white);
+
+    Plane* plane_ptr = new Plane(Point3D(0.0), Normal(0, 1, 0)); 
+    plane_ptr->setMaterial(matte_ptr2);
+    addObject(plane_ptr);	
+
+
+}
