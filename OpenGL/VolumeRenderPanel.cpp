@@ -23,10 +23,14 @@ typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse mat
 typedef Eigen::Triplet<double> T;
 static const int DIM = 2;
 extern "C" 
-float* gc( float*,int,int,int);
+float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float i_min, float i_max);
 
 float VolumeRenderPanel::index(int x, int y, int z) {
-    return udata[DIM*x*dimension[1]*dimension[0]+DIM*y*dimension[0]+DIM*z];
+	float d = udata[DIM*x*dimension[1]*dimension[0]+DIM*y*dimension[0]+DIM*z];
+	if (d < this->min) return 0.0;
+	if (d > this->max) return 1.0;
+
+    return (udata[DIM*x*dimension[1]*dimension[0]+DIM*y*dimension[0]+DIM*z]-this->min)/(this->max-this->min);
 }
 
 
@@ -120,7 +124,7 @@ float* VolumeRenderPanel::upWindScheme(int Nx, int Ny, int Nz) {
 }
 
 float* VolumeRenderPanel::upWindScheme2(int Nx, int Ny, int Nz) {
-	float* p = new float[Nx*Ny*Nz];
+	/*float* p = new float[Nx*Ny*Nz];
 	int total = Nx*Ny*Nz;
 	float l[] = { 0.577,0.577,0.577};
 	for (int i = 0; i < total; ++i)
@@ -151,19 +155,19 @@ float* VolumeRenderPanel::upWindScheme2(int Nx, int Ny, int Nz) {
 				}
 			}
 		}
-	}
-	float *lv = gc(p, Nx, Ny, Nz);
+	}*/
+	float *lv = gc(Nx, Ny, Nz,udata,dimension,DIM,opacity,this->min,this->max);
 	float mx = lv[0];
 	float mn = lv[0];
-	float mx2 = p[0];
-	float mn2 = p[0];
+	//float mx2 = p[0];
+	//float mn2 = p[0];
 	for (int i = 0; i < Nx*Ny*Nz; i++) {
 		if (lv[i] < mn) mn = lv[i];
 		if (lv[i] > mx) mx = lv[i];
-		if (p[i] > mx2) mx2 = p[i];
-		if (p[i] < mn2) mn2 = p[i];
+		//if (p[i] > mx2) mx2 = p[i];
+		//if (p[i] < mn2) mn2 = p[i];
 	}
-	cout <<"data max and min:"<< mx << ' ' << mn << ' '<<mx2<<' '<<mn2 << endl;
+	cout <<"data max and min:"<< mx << ' ' << mn << endl;
 	return lv;
 }
 

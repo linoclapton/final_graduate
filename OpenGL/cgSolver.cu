@@ -25,6 +25,7 @@
 #include <cuda_runtime.h>
 #include <cusparse.h>
 #include <cublas_v2.h>
+#include <cuda.h>
 
 // Utilities and system includes
 #include <helper_functions.h>  // helper for shared functions common to CUDA Samples
@@ -34,7 +35,23 @@
 
 const char *sSDKname     = "conjugateGradient";
 extern "C"
-float* gc( float*,int,int,int);
+float* gc( int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float i_min, float i_max);
+
+
+class DataBlock{
+public:
+	int *dimension;
+	int *idx;
+	int *DIM;
+	float* opacity;
+	float* udata;
+	float *min;
+	float *max;
+	int *Nd;
+	float *ux;
+};
+
+
 class Clock {
 private:
 	static const int N = 50;
@@ -120,30 +137,144 @@ void gen(int *I, int *J, float *val, int N, int nz,int X,int Y,int Z)
     I[N] = k;
 	clock.end("prepare CSR A");
 }
+// dim 1 dimension 3 windowMin&Max 2 opacity 1 udata 1 Nx,Ny,Nz 
+__device__ float getOpacity(float* opacity,float g) {
+	return  opacity[int(g * 255)];
+}
+__device__ float index(DataBlock block,int x, int y, int z) {
+	float* udata = block.udata;
+	int DIM = block.DIM[0];
+	int* dimension = block.dimension;
+	float mx = block.max[0];
+	float mn = block.min[0];
+	float d = udata[DIM*x*dimension[1] * dimension[0] + DIM*y*dimension[0] + DIM*z];
+	if (d < mn ) return 0.0;
+	if (d > mx) return 1.0;
+
+	return (d - mn) / (mx - mn);
+}
+
+
+__global__ void convection(float *p,DataBlock block) {
+	int Nx = block.Nd[0];
+	int Ny = block.Nd[1];
+	int Nz = block.Nd[2];
+	int x = threadIdx.x + blockIdx.x * blockDim.x;
+	int y = threadIdx.y + blockIdx.y * blockDim.y;
+	int z = threadIdx.z + blockIdx.z * blockDim.z;
+	int offset = z + y*Nz + x*Ny*Nz;
+	if (offset >= Nx*Ny*Nz) return;
+	if ( p[offset] < 0.0) {
+		p[offset] = 1.0 - getOpacity(block.opacity, index(block, x, y, z));
+		return;
+	}
+
+	int right = offset + 1;
+	int left = offset - 1;
+	int down = offset + Nz;  // on a bitmap, up down is "backwards"
+	int up = offset - Nz;
+	int top = offset + Ny*Nz;
+	int bottom = offset - Ny*Nz;
+	float ux[] = {0.577,0.577,0.577};
+	if (x == 0) {
+		 bottom += Ny*Nz; 
+	}
+	if (x == (Nx - 1)) {
+		 top -= Ny*Nz; 
+	}
+	if (y == 0) { up += Nz; }
+	if (y == (Ny - 1)) { down -= Nz; }
+	if (z == 0) {left++;}
+	if (z == (Nz - 1)) {right--;}
+
+	float flux_right = 0.0;
+	float flux_left = 0.0;
+	if (ux[0]<0.) { flux_right = (p[right]-p[offset]) * ux[0]; }
+	else { flux_left = (p[offset]-p[left])* ux[0]; }
+
+	float flux_down = 0.0;
+	float flux_up = 0.0;
+	if (ux[1]<0.) { flux_down = (p[down]-p[offset]) * ux[1]; }
+	else { flux_up = (p[offset]-p[up])* ux[1]; }
+
+	float flux_top;
+	float flux_bottom;
+	if (ux[2]<0.) { flux_top = (p[top]-p[offset]) * ux[2]; }
+	else { flux_bottom = (p[offset]-p[bottom])* ux[1]; }
+	p[offset] = (1-getOpacity(block.opacity,index(block,x,y,z)))*(p[offset]-0.5*(
+		flux_right + flux_left + flux_up + flux_down + flux_top + flux_bottom));
+
+	/*int i = block.idx[0];
+	int j = blockIdx.x;
+	int k = threadIdx.x;
+	for (int t = 0; t < 10; t++) {
+		if (i == 0 || j == 0 || k == 0) {
+			p[i*Ny*Nz + j*Nz + k] = (1.0 - getOpacity(block.opacity, index(block,i, j, k)))*
+				0.5*(l[0] * (i == Nx-1 ? 1.0 : p[(i - 1)*Ny*Nz + j*Nz + k] - p[i*Ny*Nz + j*Nz + k]) +
+					l[1] * (j == 0 ? 1.0 : p[i*Ny*Nz + (j - 1)*Nz + k] - p[i*Ny*Nz + j*Nz + k]) +
+					l[2] * (k == 0 ? 1.0 : p[i*Ny*Nz + j*Nz + k - 1] - p[i*Ny*Nz + j*Nz + k]) + 2 * p[i*Ny*Nz + j*Nz + k]);
+		}
+		else if (i == Nx - 1 || j == Ny - 1 || k == Nz - 1) {
+			p[i*Ny*Nz + j*Nz + k] = 0.0;
+		}
+		else {
+			p[i*Ny*Nz + j*Nz + k] = (1.0 - getOpacity(block.opacity, index(block, i, j, k)))*
+				0.5*(l[0] * (p[(i - 1)*Ny*Nz + j*Nz + k] - p[i*Ny*Nz + j*Nz + k]) +
+					l[1] * (p[i*Ny*Nz + (j - 1)*Nz + k] - p[i*Ny*Nz + j*Nz + k]) +
+					l[2] * (p[i*Ny*Nz + j*Nz + k - 1] - p[i*Ny*Nz + j*Nz + k]) + 2 * p[i*Ny*Nz + j*Nz + k]);
+		}
+		if (p[i*Ny*Nz + j*Nz + k] > 1.0)
+			p[i*Ny*Nz + j*Nz + k] = (1.0 - getOpacity(block.opacity, index(block, i, j, k)));
+		if (p[i*Ny*Nz + j*Nz + k] < 0.0)
+			p[i*Ny*Nz + j*Nz + k] = 0.0;
+		__syncthreads();
+	}*/
+}
 
 extern "C"
-float* gc(float* data,int X,int Y,int Z )
+float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float i_min, float i_max)
 {
 	Clock clock;
 	static bool flag = true;
-    static int M = 0, N = 0, nz = 0, *I = NULL, *J = NULL;
+	static int M = 0, N = 0, nz = 0, *I = NULL, *J = NULL;
+	static float *init_bound = NULL;
     float *val = NULL;
     const float tol = 1e-5f;
     const int max_iter = 1;
     float *x;
     float *rhs;
     float a, b, na, r0, r1;
-    int *d_col, *d_row;
-    float *d_val, *d_x, dot;
-    float *d_r, *d_p, *d_Ax;
+    static int *d_col, *d_row;
+	static float *d_val;
+	float *d_x, dot;
+	static float *d_r;
+	float *d_p, *d_Ax;
     int k;
     float alpha, beta, alpham1;
+	int Nd[] = { X,Y,Z };
 	int count = X*Y*Z;
+	static DataBlock block;
+	static int *dimension;
+	static float *opacity;
+	static float *udata;
     /* Generate a random tridiagonal symmetric matrix in CSR format */
     M = N = count;
 	clock.start();
 	clock.start();
 	if (flag) {
+		checkCudaErrors(cudaMalloc(&(block.udata), sizeof(float)*dims[0] * dims[1] * dims[2]));
+		checkCudaErrors(cudaMalloc(&d_r, sizeof(float)*count));
+		checkCudaErrors(cudaMalloc(&(block.dimension), sizeof(int)*3));
+		checkCudaErrors(cudaMalloc(&(block.Nd), sizeof(int)*3));
+		checkCudaErrors(cudaMalloc(&(block.max), sizeof(float)));
+		checkCudaErrors(cudaMalloc(&(block.min), sizeof(float)));
+		checkCudaErrors(cudaMalloc(&(block.DIM), sizeof(int)));
+		checkCudaErrors(cudaMalloc(&(block.opacity), sizeof(float)*256));
+		checkCudaErrors(cudaMemcpy(block.udata, i_udata, sizeof(float)*dims[0] * dims[1] * dims[2],cudaMemcpyHostToDevice));
+		checkCudaErrors(cudaMemcpy(block.dimension,dims, sizeof(int)*3,cudaMemcpyHostToDevice));
+		checkCudaErrors(cudaMemcpy(block.Nd,Nd, sizeof(int)*3,cudaMemcpyHostToDevice));
+		checkCudaErrors(cudaMemcpy(block.DIM,&dim, sizeof(int),cudaMemcpyHostToDevice));
+		//checkCudaErrors(cudaMemcpyToSymbol(&DIM, &dim, sizeof(int)));
 		for (int i = 0; i < N; i++)
 		{
 			if (i - Y*Z + 1 > 0) {
@@ -166,19 +297,41 @@ float* gc(float* data,int X,int Y,int Z )
 				nz++;
 			}
 		}
+		init_bound = (float*)malloc(sizeof(float)*N);
+		memset(init_bound, 0x80, sizeof(float)*N);
+		for (int j = 0; j < Y; j++)
+			for (int k = 0; k < Z; k++)
+				init_bound[j*Z+k] = 1.0;
+		for (int i = 0; i < X; i++)
+			for (int j = 0; j < Y; j++)
+				init_bound[i*Y*Z+j] = 1.0;
+		for (int i = 0; i < X; i++)
+			for (int k = 0; k < Z; k++)
+				init_bound[i*Y*Z+k] = 1.0;
 		clock.end("count total");
 		I = (int *)malloc(sizeof(int)*(N + 1));
 		J = (int *)malloc(sizeof(int)*nz);
 		val = (float *)malloc(sizeof(float)*nz);
 		gen(I, J, val, N, nz, X, Y, Z);
 	}
-
+	checkCudaErrors(cudaMemcpy(block.opacity,i_opacity, sizeof(float)*256,cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_r, init_bound,sizeof(float)*count,cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(block.min, &i_min, sizeof(int),cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(block.max, &i_max, sizeof(int),cudaMemcpyHostToDevice));
+	//checkCudaErrors(cudaMemcpy(block.idx, &i, sizeof(int),cudaMemcpyHostToDevice));
+	int i;
+	int tb[] = { 4,8,8 };
+	dim3 grid((X+tb[0]-1)/tb[0],(Y+tb[1]-1)/tb[1],(Z+tb[2]-1)/tb[2]);
+	dim3 thread(tb[0],tb[1],tb[2]);
+	for (i = 0; i < 10; i++) {
+		convection << <grid, thread>> > ( d_r, block );
+		cudaDeviceSynchronize();
+	}
     x = (float *)malloc(sizeof(float)*N);
-    rhs = (float *)malloc(sizeof(float)*N);
 	clock.start();
     for (int i = 0; i < N; i++)
     {
-        rhs[i] = data[i];
+        //rhs[i] = data[i];
         x[i] = 0.0;
     }
 
@@ -204,11 +357,13 @@ float* gc(float* data,int X,int Y,int Z )
     cusparseSetMatType(descr,CUSPARSE_MATRIX_TYPE_GENERAL);
     cusparseSetMatIndexBase(descr,CUSPARSE_INDEX_BASE_ZERO);
 
-    checkCudaErrors(cudaMalloc((void **)&d_col, nz*sizeof(int)));
-    checkCudaErrors(cudaMalloc((void **)&d_row, (N+1)*sizeof(int)));
-    checkCudaErrors(cudaMalloc((void **)&d_val, nz*sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&d_x, N*sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&d_r, N*sizeof(float)));
+	if (flag) {
+		checkCudaErrors(cudaMalloc((void **)&d_col, nz * sizeof(int)));
+		checkCudaErrors(cudaMalloc((void **)&d_row, (N + 1) * sizeof(int)));
+		checkCudaErrors(cudaMalloc((void **)&d_val, nz * sizeof(float)));
+		//checkCudaErrors(cudaMalloc((void **)&d_r, N * sizeof(float)));
+	}
+	checkCudaErrors(cudaMalloc((void **)&d_x, N * sizeof(float)));
     checkCudaErrors(cudaMalloc((void **)&d_p, N*sizeof(float)));
     checkCudaErrors(cudaMalloc((void **)&d_Ax, N*sizeof(float)));
 
@@ -216,7 +371,7 @@ float* gc(float* data,int X,int Y,int Z )
     cudaMemcpy(d_row, I, (N+1)*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_val, val, nz*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_x, x, N*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_r, rhs, N*sizeof(float), cudaMemcpyHostToDevice);
+    //cudaMemcpy(d_r, rhs, N*sizeof(float), cudaMemcpyHostToDevice);
 
     alpha = 1.0;
     alpham1 = -1.0;
@@ -288,16 +443,24 @@ float* gc(float* data,int X,int Y,int Z )
     //free(I);
     //free(J);
     //free(val);
-    free(rhs);
-    cudaFree(d_col);
-    cudaFree(d_row);
-    cudaFree(d_val);
+    //free(rhs);
+    //cudaFree(d_col);
+    //cudaFree(d_row);
+    //cudaFree(d_val);
     cudaFree(d_x);
-    cudaFree(d_r);
+    //cudaFree(d_r);
     cudaFree(d_p);
     cudaFree(d_Ax);
 	clock.end("total time:");
+	if (flag) flag = false;
 	// printf("Test Summary:  Error amount = %f\n", err);
     //exit((k <= max_iter) ? 0 : 1);
 	return x;
 }
+
+/*int main() {
+	float *udata = (float*)malloc(512 * 512 * 100 * sizeof(float));
+	int dim[3] = { 512,512,100 };
+	float *o= (float*)malloc(256* sizeof(float));
+	gc(256, 256, 50, udata, dim,2,o, 0.0f, 1.0f);
+}*/
