@@ -174,7 +174,9 @@ float* VolumeRenderPanel::upWindScheme2(int Nx, int Ny, int Nz) {
 //graphCutTex 长宽需与屏幕大小一致
 VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     //filename = "kidney2.data";
-    filename = "foot.bin";
+	filename = "bonsai.bin";
+    //filename = "blood.bin";
+    //filename = "foot.bin";
     //filename = "buckyball.bin";
     //filename = "manix.bin";
     std::ifstream fin;
@@ -282,7 +284,7 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     float space[3];
     space[0]=dimension[0];//0.595703f*dimension[0];
     space[1]=dimension[1];//0.595703f*dimension[1];
-    space[2]=dimension[2];//0.330017f*dimension[2];
+    space[2]=2*dimension[2];//0.330017f*dimension[2];
     mx = space[0];
     if(mx<space[1]) mx = space[1];
     if(mx<space[2]) mx = space[2];
@@ -1533,6 +1535,8 @@ void VolumeRenderPanel::changeWindowFilter(float min,float max){
     glsl.setUniform("WindowWidth",max-min);
     this->min = min;
     this->max = max;
+	if (Scat)
+		recomputeLV();
     //bindData();
 }
 void VolumeRenderPanel::changeSliceZ(int a,int b){
@@ -1639,12 +1643,7 @@ void VolumeRenderPanel::updateTF(std::vector<float> &tf){
     glBindTexture(GL_TEXTURE_1D, textureID3);
     glTexImage1D(GL_TEXTURE_1D, 0,GL_RED,256,0, GL_RED,GL_FLOAT,opacity);
     if(Scat){
-		clock.start();
-        float* lv = upWindScheme2(dimension[2]/DIM,dimension[1]/DIM,dimension[0]/DIM);
-		clock.end("upwind time:");
-        glsl.glActiveTex(GL_TEXTURE6);
-        glsl.texImage3D(GL_TEXTURE_3D, 0,GL_R32F,dimension[0]/DIM,dimension[1]/DIM,dimension[2]/DIM,0, GL_RED,GL_FLOAT, lv);
-        delete[] lv;
+		recomputeLV();
     }
     glsl.glActiveTex(GL_TEXTURE0);
 	clock.end("total update:");
@@ -1841,6 +1840,15 @@ void VolumeRenderPanel::saveScreenShot()
     //释放内存  
     free(screenData);  
 }
+void VolumeRenderPanel::recomputeLV() {
+		clock.start();
+		float* lv = upWindScheme2(dimension[2]/DIM,dimension[1]/DIM,dimension[0]/DIM);
+		clock.end("upwind time:");
+		glsl.glActiveTex(GL_TEXTURE6);
+		glsl.texImage3D(GL_TEXTURE_3D, 0,GL_R32F,dimension[0]/DIM,dimension[1]/DIM,dimension[2]/DIM,0, GL_RED,GL_FLOAT, lv);
+		delete[] lv;
+		glsl.glActiveTex(GL_TEXTURE0);
+}
 
 void VolumeRenderPanel::keyPressEvent(QKeyEvent *event){
     if(event->key()==Qt::Key_1){
@@ -1852,6 +1860,7 @@ void VolumeRenderPanel::keyPressEvent(QKeyEvent *event){
         Scat = true;
         glsl.setUniform("Scat", Scat);
         cout<<"scat true"<<endl;
+		recomputeLV();
     }
     updateGL();
    /* if(event->key()==Qt::Key_A){

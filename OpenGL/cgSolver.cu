@@ -154,7 +154,6 @@ __device__ float index(DataBlock block,int x, int y, int z) {
 	return (d - mn) / (mx - mn);
 }
 
-
 __global__ void convection(float *p,DataBlock block) {
 	int Nx = block.Nd[0];
 	int Ny = block.Nd[1];
@@ -164,71 +163,53 @@ __global__ void convection(float *p,DataBlock block) {
 	int z = threadIdx.z + blockIdx.z * blockDim.z;
 	int offset = z + y*Nz + x*Ny*Nz;
 	if (offset >= Nx*Ny*Nz) return;
-	if ( p[offset] < 0.0) {
-		p[offset] = 1.0 - getOpacity(block.opacity, index(block, x, y, z));
-		return;
-	}
-
-	int right = offset + 1;
-	int left = offset - 1;
-	int down = offset + Nz;  // on a bitmap, up down is "backwards"
-	int up = offset - Nz;
-	int top = offset + Ny*Nz;
-	int bottom = offset - Ny*Nz;
-	float ux[] = {0.577,0.577,0.577};
-	if (x == 0) {
-		 bottom += Ny*Nz; 
-	}
-	if (x == (Nx - 1)) {
-		 top -= Ny*Nz; 
-	}
-	if (y == 0) { up += Nz; }
-	if (y == (Ny - 1)) { down -= Nz; }
-	if (z == 0) {left++;}
-	if (z == (Nz - 1)) {right--;}
-
-	float flux_right = 0.0;
-	float flux_left = 0.0;
-	if (ux[0]<0.) { flux_right = (p[right]-p[offset]) * ux[0]; }
-	else { flux_left = (p[offset]-p[left])* ux[0]; }
-
-	float flux_down = 0.0;
-	float flux_up = 0.0;
-	if (ux[1]<0.) { flux_down = (p[down]-p[offset]) * ux[1]; }
-	else { flux_up = (p[offset]-p[up])* ux[1]; }
-
-	float flux_top;
-	float flux_bottom;
-	if (ux[2]<0.) { flux_top = (p[top]-p[offset]) * ux[2]; }
-	else { flux_bottom = (p[offset]-p[bottom])* ux[1]; }
-	p[offset] = (1-getOpacity(block.opacity,index(block,x,y,z)))*(p[offset]-0.5*(
-		flux_right + flux_left + flux_up + flux_down + flux_top + flux_bottom));
-
-	/*int i = block.idx[0];
-	int j = blockIdx.x;
-	int k = threadIdx.x;
-	for (int t = 0; t < 10; t++) {
-		if (i == 0 || j == 0 || k == 0) {
-			p[i*Ny*Nz + j*Nz + k] = (1.0 - getOpacity(block.opacity, index(block,i, j, k)))*
-				0.5*(l[0] * (i == Nx-1 ? 1.0 : p[(i - 1)*Ny*Nz + j*Nz + k] - p[i*Ny*Nz + j*Nz + k]) +
-					l[1] * (j == 0 ? 1.0 : p[i*Ny*Nz + (j - 1)*Nz + k] - p[i*Ny*Nz + j*Nz + k]) +
-					l[2] * (k == 0 ? 1.0 : p[i*Ny*Nz + j*Nz + k - 1] - p[i*Ny*Nz + j*Nz + k]) + 2 * p[i*Ny*Nz + j*Nz + k]);
+	//float err = 1.0;
+	//while(err>0.1) {
+		/*if (p[offset] < 0.0) {
+			p[offset] = 1.0 - getOpacity(block.opacity, index(block, x, y, z));
+			return;
+		}*/
+	float op = getOpacity(block.opacity, index(block, x, y, z));
+	for (int i = 0; i < 25; i++) {
+		int right = offset + 1;
+		int left = offset - 1;
+		int down = offset + Nz; 
+		int up = offset - Nz;
+		int top = offset + Ny*Nz;
+		int bottom = offset - Ny*Nz;
+		float ux[] = { 0.577,0.577,0.577 };
+		if (x == 0) {
+			bottom += Ny*Nz;
 		}
-		else if (i == Nx - 1 || j == Ny - 1 || k == Nz - 1) {
-			p[i*Ny*Nz + j*Nz + k] = 0.0;
+		if (x == (Nx - 1)) {
+			top -= Ny*Nz;
 		}
-		else {
-			p[i*Ny*Nz + j*Nz + k] = (1.0 - getOpacity(block.opacity, index(block, i, j, k)))*
-				0.5*(l[0] * (p[(i - 1)*Ny*Nz + j*Nz + k] - p[i*Ny*Nz + j*Nz + k]) +
-					l[1] * (p[i*Ny*Nz + (j - 1)*Nz + k] - p[i*Ny*Nz + j*Nz + k]) +
-					l[2] * (p[i*Ny*Nz + j*Nz + k - 1] - p[i*Ny*Nz + j*Nz + k]) + 2 * p[i*Ny*Nz + j*Nz + k]);
-		}
-		if (p[i*Ny*Nz + j*Nz + k] > 1.0)
-			p[i*Ny*Nz + j*Nz + k] = (1.0 - getOpacity(block.opacity, index(block, i, j, k)));
-		if (p[i*Ny*Nz + j*Nz + k] < 0.0)
-			p[i*Ny*Nz + j*Nz + k] = 0.0;
-		__syncthreads();
-	}*/
+		if (y == 0) { up += Nz; }
+		if (y == (Ny - 1)) { down -= Nz; }
+		if (z == 0) { left++; }
+		if (z == (Nz - 1)) { right--; }
+
+		float flux_right = 0.0;
+		float flux_left = 0.0;
+		if (ux[0] < 0.) { flux_right = (p[right] - p[offset]) * ux[0]; }
+		else { flux_left = (p[offset] - p[left])* ux[0]; }
+
+		float flux_down = 0.0;
+		float flux_up = 0.0;
+		if (ux[1] < 0.) { flux_down = (p[down] - p[offset]) * ux[1]; }
+		else { flux_up = (p[offset] - p[up])* ux[1]; }
+
+		float flux_top;
+		float flux_bottom;
+		if (ux[2] < 0.) { flux_top = (p[top] - p[offset]) * ux[2]; }
+		else { flux_bottom = (p[offset] - p[bottom])* ux[1]; }
+		p[offset] = (1 - op)*(p[offset] - 0.5*(
+			flux_right + flux_left + flux_up + flux_down + flux_top + flux_bottom));
+		if (p[offset] > 1.0) p[offset] = 1.0;
+		if (p[offset] < 0.001) p[offset] = 0.0;
+	}
+	//	err = -c*(ux[0] * (flux_right + flux_left) + ux[1] * (flux_down + flux_up) + ux[2] * (flux_top + flux_bottom)) - (1 - op)*p[offset];
+	//}
 }
 
 extern "C"
@@ -298,16 +279,15 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 			}
 		}
 		init_bound = (float*)malloc(sizeof(float)*N);
-		memset(init_bound, 0x80, sizeof(float)*N);
-		for (int j = 0; j < Y; j++)
-			for (int k = 0; k < Z; k++)
-				init_bound[j*Z+k] = 1.0;
 		for (int i = 0; i < X; i++)
 			for (int j = 0; j < Y; j++)
-				init_bound[i*Y*Z+j] = 1.0;
-		for (int i = 0; i < X; i++)
-			for (int k = 0; k < Z; k++)
-				init_bound[i*Y*Z+k] = 1.0;
+				for (int k = 0; k < Z; k++)
+					if (i == 0 || j == 0 || k == 0)
+						init_bound[i*Y*Z + j*Z + k] = 1.0;
+					else if (i == X - 1 || j == Y - 1 || k == Z - 1)
+						init_bound[i*Y*Z + j*Z + k] = 0.0;
+					else
+						init_bound[i*Y*Z + j*Z + k] = 0.0;// 333 * (init_bound[(i - 1)*Y*Z + j*Z + k] + init_bound[i*Y*Z + (j - 1)*Z + k] + init_bound[i*Y*Z + j*Z + k - 1]);
 		clock.end("count total");
 		I = (int *)malloc(sizeof(int)*(N + 1));
 		J = (int *)malloc(sizeof(int)*nz);
@@ -323,10 +303,12 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 	int tb[] = { 4,8,8 };
 	dim3 grid((X+tb[0]-1)/tb[0],(Y+tb[1]-1)/tb[1],(Z+tb[2]-1)/tb[2]);
 	dim3 thread(tb[0],tb[1],tb[2]);
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 2 ; i++) {
 		convection << <grid, thread>> > ( d_r, block );
 		cudaDeviceSynchronize();
 	}
+	rhs = (float*)malloc(sizeof(float)*N);
+	cudaMemcpy(rhs, d_r, sizeof(float)*count, cudaMemcpyDeviceToHost);
     x = (float *)malloc(sizeof(float)*N);
 	clock.start();
     for (int i = 0; i < N; i++)
@@ -407,7 +389,7 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
         r0 = r1;
         cublasStatus = cublasSdot(cublasHandle, N, d_r, 1, d_r, 1, &r1);
         cudaDeviceSynchronize();
-        printf("iteration = %3d, residual = %e\n", k, sqrt(r1));
+        //printf("iteration = %3d, residual = %e\n", k, sqrt(r1));
         k++;
     }
 

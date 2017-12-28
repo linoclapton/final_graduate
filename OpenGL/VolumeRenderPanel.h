@@ -42,6 +42,7 @@ public:
     float *upWindScheme2(int,int,int);
     float index(int x, int y, int z);
     float getOpacity(float g);
+	void recomputeLV();
 signals:
     void changeSlider(float min,float max);
     void changeLight(float*,float*,float*);
