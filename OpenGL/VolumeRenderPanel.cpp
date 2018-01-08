@@ -174,7 +174,8 @@ float* VolumeRenderPanel::upWindScheme2(int Nx, int Ny, int Nz) {
 //graphCutTex 长宽需与屏幕大小一致
 VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     //filename = "kidney2.data";
-	filename = "bonsai.bin";
+	//filename = "bonsai.bin";
+	filename = "heart.bin";
     //filename = "blood.bin";
     //filename = "foot.bin";
     //filename = "buckyball.bin";
@@ -284,7 +285,7 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     float space[3];
     space[0]=dimension[0];//0.595703f*dimension[0];
     space[1]=dimension[1];//0.595703f*dimension[1];
-    space[2]=2*dimension[2];//0.330017f*dimension[2];
+    space[2]=dimension[2];//0.330017f*dimension[2];
     mx = space[0];
     if(mx<space[1]) mx = space[1];
     if(mx<space[2]) mx = space[2];
@@ -302,6 +303,8 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     rightMotionType = ClipVolume;
     wheelMotionType = Scale;
     rotateBackTimes = 30;
+	scatter = 0.1;
+	sharp = 16;
     graphCut = false;
     memset(dataFlag,0,w*h*d);
     /*for(int i=0;i<SLICEX;i++)
@@ -1560,6 +1563,8 @@ void VolumeRenderPanel::resetMVPN(){
 	glsl.setUniform("Model", model);
 	glsl.setUniform("NormalMatrix",glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
 	glsl.setUniform("Projection", projection);
+    glsl.setUniform("scatter",scatter);
+    glsl.setUniform("sharp",sharp);
 }
 void VolumeRenderPanel::initialModel(){
 	model = glm::mat4(1.0f);
@@ -1597,6 +1602,8 @@ void VolumeRenderPanel::initialModel(){
     glsl.setUniform("ratioX",ratio[0]);
     glsl.setUniform("ratioY",ratio[1]);
     glsl.setUniform("ratioZ",ratio[2]);
+    glsl.setUniform("scatter",scatter);
+    glsl.setUniform("sharp",sharp);
 }
 
 float VolumeRenderPanel::clamp(float value,float min,float max){
@@ -1664,6 +1671,8 @@ ofstream& operator<<(ofstream& out,VolumeRenderPanel &data){
     for(int i=0;i<3;i++)
         out<<data.am[i]<<' '<<data.diff[i]<<' '<<data.spec[i]<<' ';
     out<<'\n';
+	out << data.sharp<< endl;
+	out << data.scatter<< endl;
     return out;
 }
 
@@ -1677,12 +1686,18 @@ ifstream& operator>>(ifstream& in,VolumeRenderPanel &data){
     in>>data.min>>data.max;
     for(int i=0;i<3;i++)
         in>>data.am[i]>>data.diff[i]>>data.spec[i];
+	if (!in.eof()) {
+		in >> data.sharp;
+		in >> data.scatter;
+	}
     return in;
 }
 
 void VolumeRenderPanel::updateUniform(){
     glsl.setUniform("Model",model);
     glsl.setUniform("Camera",camera);
+	glsl.setUniform("scatter", scatter);
+	glsl.setUniform("sharp",sharp);
     emit changeSlider(min,max);
     emit changeLight(am,diff,spec);
     //changeWindowFilter(min,max);
@@ -1861,7 +1876,27 @@ void VolumeRenderPanel::keyPressEvent(QKeyEvent *event){
         glsl.setUniform("Scat", Scat);
         cout<<"scat true"<<endl;
 		recomputeLV();
-    }
+	}
+	else if (event->key() == Qt::Key_9) {
+		if (sharp > 1.0f)
+			sharp /= 2;
+		glsl.setUniform("sharp", sharp);
+	}
+	else if (event->key() == Qt::Key_0) {
+		if (sharp < 512.0f)
+			sharp *= 2;
+		glsl.setUniform("sharp", sharp);
+	}
+	else if (event->key() == Qt::Key_Minus) {
+		if (scatter > 0.0f)
+			scatter -= 0.1;
+		glsl.setUniform("scatter", scatter);
+	}
+	else if (event->key() == Qt::Key_Equal) {
+		if (scatter < 1.0f)
+			scatter += 0.1;
+		glsl.setUniform("scatter", scatter);
+	}
     updateGL();
    /* if(event->key()==Qt::Key_A){
         eyePosition[0]-=0.001;

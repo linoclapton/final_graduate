@@ -145,6 +145,7 @@ private:
     float ratio[3];
     int diagonal;
     bool graphCut;
+	float scatter, sharp;
     QTimer* rotateTimer;
     int rotateBackTimes;
     glm::mat4 rotateBackModel;

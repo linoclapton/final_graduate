@@ -43,6 +43,8 @@ uniform bool drawAxis;
 uniform vec3 selectA;
 uniform vec3 selectB;
 uniform float steps;
+uniform float scatter;
+uniform float sharp;
 in vec3 sPos;
 in vec3 oPos;
 uniform int slice;
@@ -184,8 +186,8 @@ vec3 LeovyColor(vec3 pos,vec3 vcolor,vec3 ec) {
     float NL = max(dot(n,normalize(LightPosition.xyz)),0.0);
     diffuse = vcolor*Ld*NL;
     color  += diffuse;
-    //n = n/gradLength;
-    specular = vcolor*Ls*pow(max(abs(dot(n,H)),0.0),32);
+    n = n/gradLength;
+    specular = vcolor*Ls*pow(max(abs(dot(n,H)),0.0),sharp);
     color += specular; 
     vec3 ambient = vcolor*La;
     color  += ambient;
@@ -322,7 +324,7 @@ vec4 oneDimensionTransfer(){
             //acc = acc*pow(1+length(getGradientNormal((rayStart+step*dir).xyz)),4.0);
             //color = color + microfacet( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*acc;
             if(Scat)
-            color = color + 0.1*accs*LeovyColor( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*(acc);
+            color = color + scatter*accs*LeovyColor( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*(acc);
             else
             color = color + LeovyColor( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*(acc);
             //color = color + LeovyColor( (rayStart+step*dir).xyz, vec3(voxelLabel,1.0-voxelLabel,0).rgb,dir.xyz)*(1-alpha)*acc;

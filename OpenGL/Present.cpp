@@ -80,14 +80,14 @@ void Present::changeLight(float* am,float* diff,float* spec){
 }
 void Present::closeEvent(QCloseEvent* event){
     std::ofstream out("config.txt");
-    out<<*(ui.openGLWidget);
     out<<*(tf1DWidget);
+    out<<*(ui.openGLWidget);
     tf1DWidget->close();
 }
 void Present::readin(){
     std::ifstream in("config.txt");
-    in>>*(ui.openGLWidget);
     in>>*(tf1DWidget);
+    in>>*(ui.openGLWidget);
     ui.openGLWidget->updateUniform();
     ui.openGLWidget->updateGL();
 }
