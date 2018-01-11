@@ -212,11 +212,11 @@ __global__ void convection(float *p,DataBlock block) {
 	//}
 }
 
+static bool flag = true;
 extern "C"
 float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float i_min, float i_max)
 {
 	Clock clock;
-	static bool flag = true;
 	static int M = 0, N = 0, nz = 0, *I = NULL, *J = NULL;
 	static float *init_bound = NULL;
     float *val = NULL;
@@ -307,8 +307,8 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 		convection << <grid, thread>> > ( d_r, block );
 		cudaDeviceSynchronize();
 	}
-	rhs = (float*)malloc(sizeof(float)*N);
-	cudaMemcpy(rhs, d_r, sizeof(float)*count, cudaMemcpyDeviceToHost);
+	//rhs = (float*)malloc(sizeof(float)*N);
+	//cudaMemcpy(rhs, d_r, sizeof(float)*count, cudaMemcpyDeviceToHost);
     x = (float *)malloc(sizeof(float)*N);
 	clock.start();
     for (int i = 0; i < N; i++)

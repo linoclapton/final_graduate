@@ -175,8 +175,8 @@ float* VolumeRenderPanel::upWindScheme2(int Nx, int Ny, int Nz) {
 VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     //filename = "kidney2.data";
 	//filename = "bonsai.bin";
-	filename = "heart.bin";
-    //filename = "blood.bin";
+	//filename = "heart.bin";
+    filename = "blood.bin";
     //filename = "foot.bin";
     //filename = "buckyball.bin";
     //filename = "manix.bin";
@@ -752,6 +752,7 @@ void VolumeRenderPanel::updateTex(){
     //glGenerateMipmapEXT( GL_TEXTURE_3D );
     loc = glsl.getUniformLocation("volume_label");
     glsl.setUniform(loc, 6);
+	if(lv)
     delete[] lv;
 
     GLuint gradientGrayTex;
