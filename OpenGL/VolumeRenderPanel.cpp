@@ -21,16 +21,17 @@
 bool Scat; 
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
-static const int DIM = 2;
+static const int DIM = 1;
+static const int PROB_DIM = 1;
 extern "C" 
 float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float i_min, float i_max);
 
 float VolumeRenderPanel::index(int x, int y, int z) {
 	float d = udata[DIM*x*dimension[1]*dimension[0]+DIM*y*dimension[0]+DIM*z];
-	if (d < this->min) return 0.0;
-	if (d > this->max) return 1.0;
+	if (d < this->min[0]) return 0.0;
+	if (d > this->max[0]) return 1.0;
 
-    return (udata[DIM*x*dimension[1]*dimension[0]+DIM*y*dimension[0]+DIM*z]-this->min)/(this->max-this->min);
+    return (udata[DIM*x*dimension[1]*dimension[0]+DIM*y*dimension[0]+DIM*z]-this->min[0])/(this->max[0]-this->min[0]);
 }
 
 
@@ -156,7 +157,7 @@ float* VolumeRenderPanel::upWindScheme2(int Nx, int Ny, int Nz) {
 			}
 		}
 	}*/
-	float *lv = gc(Nx, Ny, Nz,udata,dimension,DIM,opacity,this->min,this->max);
+	float *lv = gc(Nx, Ny, Nz,udata,dimension,DIM,opacity,this->min[0],this->max[0]);
 	float mx = lv[0];
 	float mn = lv[0];
 	//float mx2 = p[0];
@@ -176,7 +177,8 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     //filename = "kidney2.data";
 	//filename = "bonsai.bin";
 	//filename = "heart.bin";
-    filename = "blood.bin";
+    //filename = "blood.bin";
+    filename = "tooth.bin";
     //filename = "foot.bin";
     //filename = "buckyball.bin";
     //filename = "manix.bin";
@@ -303,8 +305,8 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     rightMotionType = ClipVolume;
     wheelMotionType = Scale;
     rotateBackTimes = 30;
-	scatter = 0.1;
-	sharp = 16;
+	scatter[0] = 0.1;
+	sharp[0] = 16;
     graphCut = false;
     memset(dataFlag,0,w*h*d);
     /*for(int i=0;i<SLICEX;i++)
@@ -323,8 +325,8 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
         histgram[i] = 0;
     leftDown = false;
     rightDown = false;
-    min=0;
-    max=1;
+    min[0]=0;
+    max[0]=1;
     sliceA = 0;
     sliceB = 1;
     drawSelect = false;
@@ -343,6 +345,11 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
         color[i][0]=r1;//*0.00392;
         color[i][1]=g1;//*0.00392;
         color[i][2]=b1;//*0.00392;
+		for (int j = 0; j < 4; j++) {
+			color_texs[j][i][0]=r1;//*0.00392;
+			color_texs[j][i][1]=g1;//*0.00392;
+			color_texs[j][i][2]=b1;//*0.00392;
+		}
     }
     fin.close();
     fin.open("opacity_IPSVI.txt");
@@ -350,7 +357,9 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     { 
         fin>>opacity[i];
         //opacity[i] = clamp(1.0f*i*0.0039f,0.01f,0.8f);
-        color[i][3] = 1.0f;//opacity[i]*256;
+        color[i][3] = opacity[i];
+		for (int j = 0; j < 4; j++)
+			color_texs[j][i][3]=opacity[i];
     }
     //opacity[0] =0.0f;
 
@@ -488,7 +497,6 @@ void VolumeRenderPanel::initializeGL(){
     glsl.setUniform("tex",1);
     glsl.bindVertexArray(0);
 
-
     glsl.genFramebuffers(1,&FBO);
     glsl.bindFramebuffer(FBO,512,512,1);
     GLuint tex;
@@ -578,7 +586,7 @@ void VolumeRenderPanel::updateTex(){
     glBindTexture(GL_TEXTURE_2D, renderTex);
    // glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,4,GL_RGBA,1024,1024,NULL);
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA16,1024,1024,0,GL_RGBA,GL_FLOAT,NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -697,14 +705,17 @@ void VolumeRenderPanel::updateTex(){
     //glActiveTexture(GL_TEXTURE2);
     glsl.glActiveTex(GL_TEXTURE2);
     glGenTextures(1, &textureID3);
-    glBindTexture(GL_TEXTURE_1D, textureID3);
+    glBindTexture(GL_TEXTURE_1D_ARRAY, textureID3);
     //glTexStorage3D(GL_TEXTURE_3D, 0, GL_R16, 512, 512, 175);
-    glTexImage1D(GL_TEXTURE_1D, 0,GL_R32F,256,0, GL_RED,GL_FLOAT,opacity);
+    glTexImage2D(GL_TEXTURE_1D_ARRAY, 0,GL_RGBA16,256,4,0, GL_RGBA,GL_FLOAT, color_texs);
     //glActiveTextureARB(GL_TEXTURE0);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    loc = glsl.getUniformLocation("opacity_tex");
+    glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	for (int i = 0; i < 4; i++)
+		glTexSubImage2D(GL_TEXTURE_1D_ARRAY, 0, 0,  i, 256,  1, GL_RGBA, GL_FLOAT, color_texs[i]);
+    loc = glsl.getUniformLocation("color_texs");
     glsl.setUniform(loc, 2);
     GLuint asTexture;
     glsl.glActiveTex(GL_TEXTURE5);
@@ -793,6 +804,46 @@ void VolumeRenderPanel::updateTex(){
 
     glsl.glActiveTex(GL_TEXTURE11);
     glsl.setUniform("graphCutTex",11);
+
+	for (int i = 0; i < max_label; i++) {
+		probability[i] = new unsigned char[d*h*w]; 
+	}
+	FILE *f = fopen("probability", "rb");
+	if (f != NULL) {
+		for (int z = 0; z < w - 2; z++) {
+			for (int y = 0; y < h - 2; y++) {
+				for (int x = 0; x < d - 2; x++) {
+					int cur = (z + 1)*d*h + (y + 1)*d + x + 1;
+					for (int i = 0; i < max_label; i++) {
+						float t[1];
+						fread(t, 1, 4, f);
+						probability[i][cur] = t[0] * 255;
+						//                    if(probability[i][cur]==0)probability[i][cur]=1;
+					}
+				}
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < max_label; i++) {
+			probability[i] = NULL;
+		}
+	}
+	fclose(f);
+	for (int i = 0; i < max_label; i++) {
+		glsl.glActiveTex(GL_TEXTURE13 + i);
+		glGenTextures(1, &proba_tex[i]);
+		glBindTexture(GL_TEXTURE_3D, proba_tex[i]);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glsl.texImage3D(GL_TEXTURE_3D, 0,GL_RED, d, h, w, 0, GL_RED, GL_UNSIGNED_BYTE, probability[i]);
+		char ttt[30];
+		sprintf(ttt, "proba_tex%d", i);
+		glsl.setUniform(ttt,13+i);
+	}
     clock.end("bind texture");
 }
 void VolumeRenderPanel::initialComputeShader(){
@@ -1534,11 +1585,10 @@ void VolumeRenderPanel::wheelEvent(QWheelEvent *event){
 }
 void VolumeRenderPanel::changeWindowFilter(float min,float max){
     glsl.use(0);
-    glsl.setUniform("WindowMax",max);
-    glsl.setUniform("WindowMin",min);
-    glsl.setUniform("WindowWidth",max-min);
-    this->min = min;
-    this->max = max;
+    this->min[0] = min;
+    this->max[0] = max;
+    glsl.setUniformArray("WindowMax[0]",max_label,this->max);
+    glsl.setUniformArray("WindowMin[0]",max_label,this->min);
 	if (Scat)
 		recomputeLV();
     //bindData();
@@ -1553,19 +1603,19 @@ void VolumeRenderPanel::changeSliceZ(int a,int b){
 }
 void VolumeRenderPanel::resetMVPN(){
 	glsl.setUniform("Kd", 0.9f, 0.5f, 0.3f);
-	glsl.setUniform("Ld", 0.2f, 0.2f, 0.2f);
+	glsl.setUniform("Ld[0]", 0.2f, 0.2f, 0.2f);
 	glsl.setUniform("Ks", 0.9f, 0.5f, 0.3f);
-	glsl.setUniform("Ls", 0.4f, 0.4f, 0.4f);
+	glsl.setUniform("Ls[0]", 0.4f, 0.4f, 0.4f);
 	glsl.setUniform("EyePosition", 0.0f,0.0f,eyeZPosition);
 	glsl.setUniform("Ka", 0.1f, 0.05f, 0.03f);
-	glsl.setUniform("La", 0.7f, 0.7f, 0.7f);
+	glsl.setUniform("La[0]", 0.7f, 0.7f, 0.7f);
 	glsl.setUniform("LightPosition", view *glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f));
 	glsl.setUniform("View",view);
 	glsl.setUniform("Model", model);
 	glsl.setUniform("NormalMatrix",glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
 	glsl.setUniform("Projection", projection);
-    glsl.setUniform("scatter",scatter);
-    glsl.setUniform("sharp",sharp);
+    glsl.setUniformArray("scatter[0]",max_label,scatter);
+    glsl.setUniformArray("sharp[0]",max_label,sharp);
 }
 void VolumeRenderPanel::initialModel(){
 	model = glm::mat4(1.0f);
@@ -1579,12 +1629,12 @@ void VolumeRenderPanel::initialModel(){
     glsl.setUniform("steps",512.0f);
 	//glsl.setUniform("Kd", 0.9f, 0.5f, 0.3f);
 	glsl.setUniform("Kd", 0.6f, 0.6f, 0.6f);
-	glsl.setUniform("Ld", 0.2f, 0.2f, 0.2f);
+	glsl.setUniform("Ld[0]", 0.2f, 0.2f, 0.2f);
 	glsl.setUniform("Ks", 0.2f, 0.2f, 0.2f);
-	glsl.setUniform("Ls", 0.4f, 0.4f, 0.4f);
+	glsl.setUniform("Ls[0]", 0.4f, 0.4f, 0.4f);
 	glsl.setUniform("EyePosition", -2.0f,-2.0f,-2.0f);
 	glsl.setUniform("Ka", 1.0f, 1.0f, 1.0f);
-	glsl.setUniform("La", 0.7f, 0.7f, 0.7f);
+	glsl.setUniform("La[0]", 0.7f, 0.7f, 0.7f);
 	glsl.setUniform("LightPosition", glm::vec4(-1.0,-1.0,-1.0,1.0));//view *glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
 	//glsl.setUniform("LightPosition", glm::vec4(-1.0,-1.0,-1.0,1.0));//view *glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
 	glsl.setUniform("View",view);
@@ -1592,19 +1642,18 @@ void VolumeRenderPanel::initialModel(){
 	glsl.setUniform("Model", model);
 	glsl.setUniform("NormalMatrix",glm::mat3(glm::vec3(mv[0]), glm::vec3(mv[1]), glm::vec3(mv[2])));
 	glsl.setUniform("Projection", projection);
-    min = 0.10f;
-    max = 0.85f;
-    glsl.setUniform("WindowMin",0.10f);
-    glsl.setUniform("WindowMax",0.85f);
-    glsl.setUniform("WindowWidth",0.75f);
+    min[0] = 0.10f;
+    max[0] = 0.85f;
+    glsl.setUniformArray("WindowMin[0]",max_label,min);
+    glsl.setUniformArray("WindowMax[0]",max_label,max);
     glsl.setUniform("spaceX",spaceX); 
     glsl.setUniform("spaceY",spaceY); 
     glsl.setUniform("spaceZ",spaceZ); 
     glsl.setUniform("ratioX",ratio[0]);
     glsl.setUniform("ratioY",ratio[1]);
     glsl.setUniform("ratioZ",ratio[2]);
-    glsl.setUniform("scatter",scatter);
-    glsl.setUniform("sharp",sharp);
+    glsl.setUniformArray("scatter[0]",max_label,scatter);
+    glsl.setUniformArray("sharp[0]",max_label,sharp);
 }
 
 float VolumeRenderPanel::clamp(float value,float min,float max){
@@ -1617,13 +1666,13 @@ float VolumeRenderPanel::clamp(float value,float min,float max){
 
 void VolumeRenderPanel::updateLight(float ambient[],float diffuse[],float specular[]){
     for(int i=0;i<3;i++){
-        am[i] = ambient[i];
-        diff[i] = diffuse[i];
-        spec[i] = specular[i];
+        am[0][i] = ambient[i];
+        diff[0][i] = diffuse[i];
+        spec[0][i] = specular[i];
     }
-	glsl.setUniform("La", ambient[0],ambient[1],ambient[2]);
-	glsl.setUniform("Ld", diffuse[0],diffuse[1],diffuse[2]); 
-	glsl.setUniform("Ls", specular[0],specular[1],specular[2]); 
+	glsl.setUniform("La[0]", ambient[0],ambient[1],ambient[2]);
+	glsl.setUniform("Ld[0]", diffuse[0],diffuse[1],diffuse[2]); 
+	glsl.setUniform("Ls[0]", specular[0],specular[1],specular[2]); 
 	//glsl.setUniform("LightPosition", specular[0],specular[1],specular[2]); 
 
 }
@@ -1639,6 +1688,12 @@ void VolumeRenderPanel::updateTF(std::vector<float> &tf){
         color[i][2] = tf[i*4+2];
         color[i][3] = tf[i*4+3];
         opacity[i]  = tf[i*4+3];
+		for (int j = 0; j < 4; j++) {
+			color_texs[j][i][0] = tf[i*4];
+			color_texs[j][i][1] = tf[i*4+1];
+			color_texs[j][i][2] = tf[i*4+2];
+			color_texs[j][i][3] = tf[i*4+3];
+		}
         fout<<color[i][0]<<' '<<color[i][1]<<' '<<color[i][2]<<endl;
         fout2<<opacity[i]<<endl;
     }
@@ -1648,8 +1703,8 @@ void VolumeRenderPanel::updateTF(std::vector<float> &tf){
     glBindTexture(GL_TEXTURE_1D, textureID2);
     glTexImage1D(GL_TEXTURE_1D, 0,GL_RGBA,256,0, GL_RGBA,GL_FLOAT,color);
     glsl.glActiveTex(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_1D, textureID3);
-    glTexImage1D(GL_TEXTURE_1D, 0,GL_RED,256,0, GL_RED,GL_FLOAT,opacity);
+    glBindTexture(GL_TEXTURE_1D_ARRAY, textureID3);
+	glTexSubImage2D(GL_TEXTURE_1D_ARRAY, 0, 0,  0, 256,  1, GL_RGBA, GL_FLOAT, color_texs[0]);
     if(Scat){
 		recomputeLV();
     }
@@ -1667,13 +1722,13 @@ ofstream& operator<<(ofstream& out,VolumeRenderPanel &data){
         for(int j=0;j<4;j++)
             out<<data.camera[i][j]<<' ';
     out<<'\n';
-    out<<data.min<<' '<<data.max<<' ';
+    out<<data.min[0]<<' '<<data.max[0]<<' ';
     out<<'\n';
     for(int i=0;i<3;i++)
-        out<<data.am[i]<<' '<<data.diff[i]<<' '<<data.spec[i]<<' ';
+        out<<data.am[0][i]<<' '<<data.diff[0][i]<<' '<<data.spec[0][i]<<' ';
     out<<'\n';
-	out << data.sharp<< endl;
-	out << data.scatter<< endl;
+	out << data.sharp[0]<< endl;
+	out << data.scatter[0]<< endl;
     return out;
 }
 
@@ -1684,12 +1739,34 @@ ifstream& operator>>(ifstream& in,VolumeRenderPanel &data){
     for(int i=0;i<4;i++)
         for(int j=0;j<4;j++)
             in>>data.camera[i][j];
-    in>>data.min>>data.max;
+    in>>data.min[0]>>data.max[0];
     for(int i=0;i<3;i++)
-        in>>data.am[i]>>data.diff[i]>>data.spec[i];
+        in>>data.am[0][i]>>data.diff[0][i]>>data.spec[0][i];
 	if (!in.eof()) {
-		in >> data.sharp;
-		in >> data.scatter;
+		in >> data.sharp[0];
+		in >> data.scatter[0];
+	}
+	if (!in.eof()) {
+		for (int j = 1; j < 4; j++) {
+			in >> data.min[j] >> data.max[j];
+			for (int i = 0; i < 3; i++)
+				in >> data.am[j][i] >> data.diff[j][i] >> data.spec[j][i];
+			in >> data.sharp[j];
+			in >> data.scatter[j];
+		}
+	}
+	else {
+		for (int j = 1; j < 4; j++) {
+			data.min[j] = data.min[0];  data.max[j] = data.max[0];
+			for (int i = 0; i < 3; i++) {
+				data.am[j][i] = data.am[0][i]; 
+				data.diff[j][i] = data.diff[0][i]; 
+				data.spec[j][i] =  data.spec[0][i];
+			}
+			data.sharp[j] = data.sharp[0];
+			data.scatter[j] = data.scatter[0];
+		}
+
 	}
     return in;
 }
@@ -1697,10 +1774,10 @@ ifstream& operator>>(ifstream& in,VolumeRenderPanel &data){
 void VolumeRenderPanel::updateUniform(){
     glsl.setUniform("Model",model);
     glsl.setUniform("Camera",camera);
-	glsl.setUniform("scatter", scatter);
-	glsl.setUniform("sharp",sharp);
-    emit changeSlider(min,max);
-    emit changeLight(am,diff,spec);
+	glsl.setUniformArray("scatter[0]",max_label, scatter);
+	glsl.setUniformArray("sharp[0]",max_label,sharp);
+    emit changeSlider(min[0],max[0]);
+    emit changeLight(am[0],diff[0],spec[0]);
     //changeWindowFilter(min,max);
    
 }
@@ -1879,24 +1956,24 @@ void VolumeRenderPanel::keyPressEvent(QKeyEvent *event){
 		recomputeLV();
 	}
 	else if (event->key() == Qt::Key_9) {
-		if (sharp > 1.0f)
-			sharp /= 2;
-		glsl.setUniform("sharp", sharp);
+		if (sharp[0] > 1.0f)
+			sharp[0] /= 2;
+		glsl.setUniformArray("sharp[0]",max_label, sharp);
 	}
 	else if (event->key() == Qt::Key_0) {
-		if (sharp < 512.0f)
-			sharp *= 2;
-		glsl.setUniform("sharp", sharp);
+		if (sharp[0] < 512.0f)
+			sharp[0] *= 2;
+		glsl.setUniformArray("sharp[0]",max_label, sharp);
 	}
 	else if (event->key() == Qt::Key_Minus) {
-		if (scatter > 0.0f)
-			scatter -= 0.1;
-		glsl.setUniform("scatter", scatter);
+		if (scatter[0] > 0.0f)
+			scatter[0] -= 0.1;
+		glsl.setUniformArray("scatter[0]", max_label,scatter);
 	}
 	else if (event->key() == Qt::Key_Equal) {
-		if (scatter < 1.0f)
-			scatter += 0.1;
-		glsl.setUniform("scatter", scatter);
+		if (scatter[0] < 1.0f)
+			scatter[0] += 0.1;
+		glsl.setUniformArray("scatter[0]", max_label,scatter);
 	}
     updateGL();
    /* if(event->key()==Qt::Key_A){

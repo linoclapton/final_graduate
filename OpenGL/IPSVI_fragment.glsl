@@ -80,7 +80,17 @@ vec3 fixClipBorderGradient(vec3 pos) {
     return gradient;
 }
 
-vec3 getGradientNormal(vec3 pos){    vec3 n;    if(onBorder(pos))        n = fixClipBorderGradient(pos);    else        n = vec3(getVoxel(pos - vec3(spaceX, 0.0, 0.0)) - getVoxel(pos + vec3(spaceX, 0.0, 0.0)),		getVoxel(pos - vec3(0.0, spaceY, 0.0)) - getVoxel(pos + vec3(0.0, spaceY, 0.0)),		getVoxel(pos - vec3(0.0, 0.0, spaceZ)) - getVoxel(pos + vec3(0.0, 0.0, spaceZ))		)*0.5;	return n;}
+vec3 getGradientNormal(vec3 pos){
+    vec3 n;
+    if(onBorder(pos))
+        n = fixClipBorderGradient(pos);
+    else
+        n = vec3(getVoxel(pos - vec3(spaceX, 0.0, 0.0)) - getVoxel(pos + vec3(spaceX, 0.0, 0.0)),
+		getVoxel(pos - vec3(0.0, spaceY, 0.0)) - getVoxel(pos + vec3(0.0, spaceY, 0.0)),
+		getVoxel(pos - vec3(0.0, 0.0, spaceZ)) - getVoxel(pos + vec3(0.0, 0.0, spaceZ))
+		)*0.5;
+	return n;
+}
 vec3 getGradientNormalAll(vec3 pos){
    	vec3 n = vec3(texture(volume_tex,(pos - vec3(spaceX, 0.0, 0.0))).r - texture(volume_tex,(pos + vec3(spaceX, 0.0, 0.0))).r,
 		texture(volume_tex,(pos - vec3(0.0, spaceY, 0.0))).r- texture(volume_tex,(pos + vec3(0.0, spaceY, 0.0))).r,

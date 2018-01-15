@@ -14,6 +14,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
@@ -66,6 +67,7 @@ public:
     QCheckBox *checkBox_background;
     QPushButton *button_cleargraphcut;
     QLabel *tfPanel;
+    QComboBox *comboBox;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -74,7 +76,7 @@ public:
     {
         if (PresentClass->objectName().isEmpty())
             PresentClass->setObjectName(QStringLiteral("PresentClass"));
-        PresentClass->resize(1167, 1037);
+        PresentClass->resize(1190, 1037);
         centralWidget = new QWidget(PresentClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         horizontalLayout_2 = new QHBoxLayout(centralWidget);
@@ -289,6 +291,11 @@ public:
 
         gridLayout->addWidget(tfPanel, 20, 0, 1, 4);
 
+        comboBox = new QComboBox(centralWidget);
+        comboBox->setObjectName(QStringLiteral("comboBox"));
+
+        gridLayout->addWidget(comboBox, 10, 3, 1, 1);
+
 
         horizontalLayout->addLayout(gridLayout);
 
@@ -298,7 +305,7 @@ public:
         PresentClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(PresentClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1167, 23));
+        menuBar->setGeometry(QRect(0, 0, 1190, 23));
         PresentClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(PresentClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -331,6 +338,13 @@ public:
         checkBox_background->setText(QString());
         button_cleargraphcut->setText(QApplication::translate("PresentClass", "clear", 0));
         tfPanel->setText(QString());
+        comboBox->clear();
+        comboBox->insertItems(0, QStringList()
+         << QApplication::translate("PresentClass", "1\347\261\273", 0)
+         << QApplication::translate("PresentClass", "2\347\261\273", 0)
+         << QApplication::translate("PresentClass", "3\347\261\273", 0)
+         << QApplication::translate("PresentClass", "4\347\261\273", 0)
+        );
     } // retranslateUi
 
 };

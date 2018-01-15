@@ -118,6 +118,7 @@ private:
     GLfloat lookupImg[256*256*4];
     float maxValue,minValue;
     float color[256][4];
+    float color_texs[4][256][4];
     int gradientGrayData[256][256];
     int volumeX,volumeY,volumeZ;
     float spaceX,spaceY,spaceZ;
@@ -133,19 +134,16 @@ private:
     int totalTime;
     int lastFPS;
     int w,h;
-    float min,max;
     string tab[19];
     AVSTable2D asTable[19];
     int sliceA,sliceB;
     float minVoxel,maxVoxel;
     float minGradient,maxGradient;
-    float am[3],diff[3],spec[3];
     GLuint VAO,VBO,EBO;
     float backColor[3],frontColor[3];
     float ratio[3];
     int diagonal;
     bool graphCut;
-	float scatter, sharp;
     QTimer* rotateTimer;
     int rotateBackTimes;
     glm::mat4 rotateBackModel;
@@ -155,5 +153,11 @@ private:
     GLfloat radius;
     bool drawPolygon;
     int** label;
+	static const int max_label = 4;
+	GLuint proba_tex[max_label];
+	unsigned char * probability[max_label];
+    float am[max_label][3],diff[max_label][3],spec[max_label][3];
+	float scatter[max_label], sharp[max_label];
+    float min[max_label],max[max_label];
 };
 

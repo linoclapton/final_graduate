@@ -4,22 +4,24 @@
 //vec3 tnorm;
 //vec4 eyeCoordsupwind time;
 //}tes_in;
+const int TYPE = 4;
 uniform mat4 Model;
 uniform vec4 LightPosition; // Light position in eye coords.
+uniform float scatter[TYPE];
+uniform float sharp[TYPE];
+uniform vec3 Ld[TYPE];            // Diffuse light intensity
+uniform vec3 La[TYPE];
+uniform vec3 Ls[TYPE];
+uniform float WindowMin[TYPE];
+uniform float WindowMax[TYPE];
 uniform vec3 Kd;            // Diffuse reflectivity
-uniform vec3 Ld;            // Diffuse light intensity
 uniform vec3 Ka;
-uniform vec3 La;
 uniform vec3 Ks;
-uniform vec3 Ls;
 uniform vec3 EyePosition;
 uniform bool hasLight;
 uniform bool preRender;
 uniform bool DrawSelectRect;
 uniform bool DrawSelectRectLine;
-uniform float WindowMin;
-uniform float WindowMax;
-uniform float WindowWidth;
 uniform float spaceX;
 uniform float spaceY;
 uniform float spaceZ;
@@ -31,7 +33,7 @@ uniform sampler3D volume_tex;
 uniform sampler3D volume_label;
 uniform sampler3D volume_flag;//Ìí¼Ó
 uniform sampler1D color_tex;
-uniform sampler1D opacity_tex;
+uniform sampler1DArray color_texs;
 uniform sampler2D front_tex;
 uniform sampler2D back_tex;
 uniform sampler2D gradient_gray_opacity;
@@ -43,8 +45,6 @@ uniform bool drawAxis;
 uniform vec3 selectA;
 uniform vec3 selectB;
 uniform float steps;
-uniform float scatter;
-uniform float sharp;
 in vec3 sPos;
 in vec3 oPos;
 uniform int slice;
@@ -55,6 +55,11 @@ uniform float albedo;
 uniform sampler2DArray asTable;
 uniform bool graphCut;
 uniform sampler1D label_flag;
+uniform sampler3D proba_tex0;
+uniform sampler3D proba_tex1;
+uniform sampler3D proba_tex2;
+uniform sampler3D proba_tex3;
+
 
 bool check(float f) {
 	if(f+0.5<0||f+0.5>1)
@@ -70,12 +75,12 @@ float rand(vec2 x){
 float getVoxel(vec3 pos){
     float voxel = texture(volume_tex,pos).r; 
     //float voxel = texture(volume_label,pos).r; 
-    if(voxel<WindowMin)
+    if(voxel<WindowMin[0])
         voxel = 0;
-    else if(voxel>WindowMax)
+    else if(voxel>WindowMax[0])
         voxel = 1;
     else
-        voxel = (voxel-WindowMin)/WindowWidth;
+        voxel = (voxel-WindowMin[0])/(WindowMax[0]-WindowMin[0]);
     return voxel;
 }
 
@@ -114,17 +119,6 @@ vec3 getGradientNormalAll(vec3 pos){
 	return normalize(n);
 
 }
-vec3 getGradientNormalOp(vec3 pos){
-   	vec3 n = vec3(texture(opacity_tex,texture(volume_tex,(pos - vec3(spaceX, 0.0, 0.0))).r).r - 
-        texture(opacity_tex,texture(volume_tex,(pos + vec3(spaceX, 0.0, 0.0))).r).r,
-		texture(opacity_tex,texture(volume_tex,(pos - vec3(0.0, spaceY, 0.0))).r).r- 
-        texture(opacity_tex,texture(volume_tex,(pos + vec3(0.0, spaceY, 0.0))).r).r,
-		texture(opacity_tex,texture(volume_tex,(pos - vec3(0.0, 0.0, spaceZ))).r).r- 
-        texture(opacity_tex,texture(volume_tex,(pos + vec3(0.0, 0.0, spaceZ))).r).r
-		);
-    n = n*0.5;
-	return n;
-}
 float getGradient(vec3 pos){
    	vec3 n = vec3(getVoxel(pos - vec3(spaceX, 0.0, 0.0)) - getVoxel(pos + vec3(spaceX, 0.0, 0.0)),
 		          getVoxel(pos - vec3(0.0, spaceY, 0.0)) - getVoxel(pos + vec3(0.0, spaceY, 0.0)),
@@ -144,9 +138,9 @@ vec3 lightColor(vec4 pos,vec4 color,vec4 view){
         vec3 v = normalize(-view.xyz);
         vec3 e = normalize(v+s);
         //vec3 LightIntensity =c*Ls*pow(max(dot(v,e),0.0),100)+La * c + Ld * c * max( dot( s, tn ), 0.0 );
-        lightIntensity = Ls*pow(max(dot(tn,e),0.0),8.0) + Ld * c * max( dot( s, tn ), 0.0 );
+        lightIntensity = Ls[0]*pow(max(dot(tn,e),0.0),8.0) + Ld[0] * c * max( dot( s, tn ), 0.0 );
     }
-    lightIntensity =lightIntensity + La*c;
+    lightIntensity =lightIntensity + La[0]*c;
     return lightIntensity;
 }
 vec3 microfacet(vec3 pos,vec3 vcolor,vec3 dir){
@@ -181,19 +175,34 @@ vec3 LeovyColor(vec3 pos,vec3 vcolor,vec3 ec) {
     //vec3 n = getGradientNormal(pos);
     vec3 specular; 
     vec3 diffuse;
+	int i = 1;
+	float p = texture(proba_tex0,pos).x;
+	float tmp[4];
+	tmp[1] = texture(proba_tex1,pos).x;
+	tmp[2] = texture(proba_tex2,pos).x;
+	tmp[3] = texture(proba_tex3,pos).x;
+	int index = 0;
+	while(i<4){
+		if (tmp[i] > p) { p = tmp[i]; index = i; }
+		i++;
+	}
+	if ( index==0 ) vcolor = vec3(0.5, 0.5, 0.5);
+	else if (index == 1) vcolor = vec3(1.0, 0.0, 0.0);
+	else if (index == 2) vcolor = vec3(0.0, 1.0, 0.0);
+	else if (index == 3) vcolor = vec3(0.0, 0.0, 1.0);
     float gradLength = length(n);
     vec3 H = normalize((-ec/length(-ec)).xyz+(LightPosition/length(LightPosition)).xyz);
     float NL = max(dot(n,normalize(LightPosition.xyz)),0.0);
-    diffuse = vcolor*Ld*NL;
+    diffuse = vcolor*Ld[0]*NL;
     color  += diffuse;
     n = n/gradLength;
-    specular = vcolor*Ls*pow(max(abs(dot(n,H)),0.0),sharp);
+    specular = vcolor*Ls[0]*pow(max(abs(dot(n,H)),0.0),sharp[0]);
     color += specular; 
-    vec3 ambient = vcolor*La;
+    vec3 ambient = vcolor*La[0];
     color  += ambient;
     //color =vcolor*La+La/(1+pos.z)*(vcolor*max(dot(-n,LightPosition.xyz),0.0)+vcolor*pow(max(dot(-n,H),0.0),10));
     // return color;
-    return color;
+	return color;
 }
 void raySetup(in vec3 first, in vec3 last, in vec3 dimension, out vec3 rayDirection, out float tIncr, out float tEnd) {
     // calculate ray parameters
@@ -221,7 +230,7 @@ vec4 directRendering(in vec3 first, in vec3 last, vec2 p) {
             vec3 sampleVal = first.rgb + t * direction;
             float voxel = getVoxel(sampleVal);
             // no shading is applied
-            vec4 color = vec4(texture(color_tex,voxel).rgb,texture(opacity_tex,voxel));
+			vec4 color = texture(color_tex, voxel).rgba; 
 
             // perform compositing
             if (color.a > 0.0) {
@@ -298,7 +307,7 @@ vec4 oneDimensionTransfer(){
     vec4 originStart = rayStart;
     float tmpLabel = 0.4f;
     int maxDepth;
-    vec2 random[5] = {vec2(-1,0),vec2(0,1),vec2(1,0),vec2(0,0),vec2(0,-1)};
+    vec2 random[5] = {vec2(0,0),vec2(0,1),vec2(1,0),vec2(-1,0),vec2(0,-1)};
     for(index=0;index<loop;index++){
        rayStart = originStart+dir*rand(gl_FragCoord.xy+random[index]);
        maxDepth = 0; 
@@ -312,10 +321,10 @@ vec4 oneDimensionTransfer(){
         //preVoxel = getVoxel(vec3(rayStart+(step-1)*dir).xyz); 
         //voxelLabel = texture(volume_label,(rayStart+step*dir).xyz).r;
         //tmpLabel = texture(label_flag,voxelLabel).r;
-		acc = texture(opacity_tex,voxel.x).r;
-       accs = texture(volume_label,(rayStart+step*dir).xyz).r;
+		acc = texture(color_texs,vec2(voxel,0)).a;
+        accs = texture(volume_label,(rayStart+step*dir).xyz).r;
         //acc = texture(preIntegerationTable,vec2(preVoxel,voxel)).a;
-		if(tmpLabel>0.3f&&acc>0.00002)
+		if(tmpLabel>0.3f&&acc>0.0002)
 		{
 			//color = color + (texture(color_tex,voxel)*(1-alpha)).rgb; //lightColor(Model*(rayStart+step*dir-0.5),texture(color_tex,voxel))*(1-alpha);
             if(acc>maxAlpha.a)
@@ -324,7 +333,7 @@ vec4 oneDimensionTransfer(){
             //acc = acc*pow(1+length(getGradientNormal((rayStart+step*dir).xyz)),4.0);
             //color = color + microfacet( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*acc;
             if(Scat)
-            color = color + scatter*accs*LeovyColor( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*(acc);
+            color = color + scatter[0]*accs*LeovyColor( (rayStart+step*dir).xyz, texture(color_texs,vec2(voxel,0)).rgb,dir.xyz)*(1-alpha)*(acc);
             else
             color = color + LeovyColor( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*(acc);
             //color = color + LeovyColor( (rayStart+step*dir).xyz, vec3(voxelLabel,1.0-voxelLabel,0).rgb,dir.xyz)*(1-alpha)*acc;
@@ -352,8 +361,8 @@ vec4 oneDimensionTransfer(){
 	color = clamp(color,0.0,1.0);
 	result[index] = vec4(color,alpha);
     }
-	if(alpha<0.01)
-		discard;
+	//if(alpha<0.01)
+	//	discard;
     vec4 outputColor = vec4(0.0,0.0,0.0,0.0);
     for(index=0;index<loop;index++)
     outputColor = outputColor+result[index];
@@ -401,7 +410,7 @@ vec4 renderGraphCutBF(){
             continue;
         //preVoxel = getVoxel(vec3(rayStart+(step-1)*dir).xyz); 
         voxel = getVoxel(vec3(rayStart+step*dir).xyz);
-		acc =  texture(opacity_tex,voxel.x).r;
+		acc =  texture(color_tex,voxel.x).a;
         //acc = texture(preIntegerationTable,vec2(preVoxel,voxel)).a;
 		if(acc>0.002)
 		{
@@ -546,7 +555,7 @@ vec4 DVR_AS(){
         x_ = (rayStart+step*dir).xyz;
         x0 = x_ - ambient_radius*rayDir;
         voxel = getVoxel(x_);
-		acc =  texture(opacity_tex,voxel).r;
+		acc =  texture(color_tex,voxel).a;
         accColor = texture(color_tex,voxel).rgb;
         acc_s = accColor*acc*albedo;
         acc_t = sampleAEVolume(x_);
@@ -560,7 +569,7 @@ vec4 DVR_AS(){
         Ji = Ji+T*acc_s*L_tao*stepSize;
         voxel = getVoxel(x0);
         accColor = texture(color_tex,voxel).rgb;
-        acc = texture(opacity_tex,voxel).r;
+        acc = texture(color_tex,voxel).a;
         Tao = Tao + acc*stepSize; 
         T = exp(-Tao);
 	}	

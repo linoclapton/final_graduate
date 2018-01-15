@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1167</width>
+    <width>1190</width>
     <height>1037</height>
    </rect>
   </property>
@@ -340,6 +340,30 @@
           </property>
          </widget>
         </item>
+        <item row="10" column="3">
+         <widget class="QComboBox" name="comboBox">
+          <item>
+           <property name="text">
+            <string>1类</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>2类</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>3类</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>4类</string>
+           </property>
+          </item>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -351,7 +375,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1167</width>
+     <width>1190</width>
      <height>23</height>
     </rect>
    </property>
