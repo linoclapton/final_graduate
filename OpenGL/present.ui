@@ -341,7 +341,7 @@
          </widget>
         </item>
         <item row="10" column="3">
-         <widget class="QComboBox" name="comboBox">
+         <widget class="QComboBox" name="comboBox_type">
           <item>
            <property name="text">
             <string>1类</string>

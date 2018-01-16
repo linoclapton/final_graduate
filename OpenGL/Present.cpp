@@ -53,6 +53,7 @@ Present::Present(QWidget *parent)
     connect(ui.checkBox_background,SIGNAL(stateChanged(int)),this,SLOT(changeMotionStatus(int)));
     connect(ui.button_cleargraphcut,SIGNAL(clicked()),ui.openGLWidget,SLOT(clearPoints()));
     connect(ui.button_undoclip,SIGNAL(clicked()),ui.openGLWidget,SLOT(undoClip()));
+	connect(ui.comboBox_type, SIGNAL(currentIndexChanged(int)), this, SLOT(changeType(int)));
 }
 void Present::changeLight(float* am,float* diff,float* spec){
     for(int i=0;i<3;i++){
@@ -80,14 +81,25 @@ void Present::changeLight(float* am,float* diff,float* spec){
 }
 void Present::closeEvent(QCloseEvent* event){
     std::ofstream out("config.txt");
-    out<<*(tf1DWidget);
+    //out<<*(tf1DWidget);
+	int cur = ui.openGLWidget->current_type;
+	tf1DWidget->save(ui.openGLWidget->polygons[cur], ui.openGLWidget->qcolors[cur]);
     out<<*(ui.openGLWidget);
     tf1DWidget->close();
 }
 void Present::readin(){
     std::ifstream in("config.txt");
-    in>>*(tf1DWidget);
+    //in>>*(tf1DWidget);
     in>>*(ui.openGLWidget);
+	tf1DWidget->load(ui.openGLWidget->polygons[0], ui.openGLWidget->qcolors[0]);
+	ui.openGLWidget->changeClassType(1);
+	tf1DWidget->load(ui.openGLWidget->polygons[1], ui.openGLWidget->qcolors[1]);
+	ui.openGLWidget->changeClassType(2);
+	tf1DWidget->load(ui.openGLWidget->polygons[2], ui.openGLWidget->qcolors[2]);
+	ui.openGLWidget->changeClassType(3);
+	tf1DWidget->load(ui.openGLWidget->polygons[3], ui.openGLWidget->qcolors[3]);
+	ui.openGLWidget->changeClassType(0);
+	tf1DWidget->load(ui.openGLWidget->polygons[0], ui.openGLWidget->qcolors[0]);
     ui.openGLWidget->updateUniform();
     ui.openGLWidget->updateGL();
 }
@@ -219,4 +231,13 @@ void Present::changeMotionStatus(int state){
     else{
         ui.openGLWidget->setLeftMotionType(Rotate);
     }
+}
+
+void Present::changeType(int type) {
+	int cur = ui.openGLWidget->current_type;
+	tf1DWidget->save(ui.openGLWidget->polygons[cur], ui.openGLWidget->qcolors[cur]);
+	ui.openGLWidget->changeClassType(type);
+	cur = ui.openGLWidget->current_type;
+	tf1DWidget->load(ui.openGLWidget->polygons[cur], ui.openGLWidget->qcolors[cur]);
+    ui.openGLWidget->updateGL();
 }

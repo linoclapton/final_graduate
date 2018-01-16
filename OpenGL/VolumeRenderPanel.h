@@ -43,6 +43,11 @@ public:
     float index(int x, int y, int z);
     float getOpacity(float g);
 	void recomputeLV();
+public:
+	static const int max_label = 4;
+	QPolygonF polygons[max_label];
+	QVector<QColor> qcolors[max_label];
+	int current_type;
 signals:
     void changeSlider(float min,float max);
     void changeLight(float*,float*,float*);
@@ -50,6 +55,7 @@ public slots:
     void clearPoints();
     void resetModel();
     void undoClip();
+	void changeClassType(int index);
 private slots:
     void rotateBack();
 protected:
@@ -153,7 +159,6 @@ private:
     GLfloat radius;
     bool drawPolygon;
     int** label;
-	static const int max_label = 4;
 	GLuint proba_tex[max_label];
 	unsigned char * probability[max_label];
     float am[max_label][3],diff[max_label][3],spec[max_label][3];

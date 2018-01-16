@@ -59,7 +59,7 @@ uniform sampler3D proba_tex0;
 uniform sampler3D proba_tex1;
 uniform sampler3D proba_tex2;
 uniform sampler3D proba_tex3;
-
+int type;
 
 bool check(float f) {
 	if(f+0.5<0||f+0.5>1)
@@ -75,12 +75,12 @@ float rand(vec2 x){
 float getVoxel(vec3 pos){
     float voxel = texture(volume_tex,pos).r; 
     //float voxel = texture(volume_label,pos).r; 
-    if(voxel<WindowMin[0])
+    if(voxel<WindowMin[type])
         voxel = 0;
-    else if(voxel>WindowMax[0])
+    else if(voxel>WindowMax[type])
         voxel = 1;
     else
-        voxel = (voxel-WindowMin[0])/(WindowMax[0]-WindowMin[0]);
+        voxel = (voxel-WindowMin[type])/(WindowMax[type]-WindowMin[type]);
     return voxel;
 }
 
@@ -175,30 +175,15 @@ vec3 LeovyColor(vec3 pos,vec3 vcolor,vec3 ec) {
     //vec3 n = getGradientNormal(pos);
     vec3 specular; 
     vec3 diffuse;
-	int i = 1;
-	float p = texture(proba_tex0,pos).x;
-	float tmp[4];
-	tmp[1] = texture(proba_tex1,pos).x;
-	tmp[2] = texture(proba_tex2,pos).x;
-	tmp[3] = texture(proba_tex3,pos).x;
-	int index = 0;
-	while(i<4){
-		if (tmp[i] > p) { p = tmp[i]; index = i; }
-		i++;
-	}
-	if ( index==0 ) vcolor = vec3(0.5, 0.5, 0.5);
-	else if (index == 1) vcolor = vec3(1.0, 0.0, 0.0);
-	else if (index == 2) vcolor = vec3(0.0, 1.0, 0.0);
-	else if (index == 3) vcolor = vec3(0.0, 0.0, 1.0);
     float gradLength = length(n);
     vec3 H = normalize((-ec/length(-ec)).xyz+(LightPosition/length(LightPosition)).xyz);
     float NL = max(dot(n,normalize(LightPosition.xyz)),0.0);
-    diffuse = vcolor*Ld[0]*NL;
+    diffuse = vcolor*Ld[type]*NL;
     color  += diffuse;
     n = n/gradLength;
-    specular = vcolor*Ls[0]*pow(max(abs(dot(n,H)),0.0),sharp[0]);
+    specular = vcolor*Ls[type]*pow(max(abs(dot(n,H)),0.0),sharp[0]);
     color += specular; 
-    vec3 ambient = vcolor*La[0];
+    vec3 ambient = vcolor*La[type];
     color  += ambient;
     //color =vcolor*La+La/(1+pos.z)*(vcolor*max(dot(-n,LightPosition.xyz),0.0)+vcolor*pow(max(dot(-n,H),0.0),10));
     // return color;
@@ -317,11 +302,21 @@ vec4 oneDimensionTransfer(){
             voxel = 0.0;
         else
             voxel = getVoxel(vec3(rayStart+step*dir).xyz);
-
         //preVoxel = getVoxel(vec3(rayStart+(step-1)*dir).xyz); 
         //voxelLabel = texture(volume_label,(rayStart+step*dir).xyz).r;
         //tmpLabel = texture(label_flag,voxelLabel).r;
-		acc = texture(color_texs,vec2(voxel,0)).a;
+		int i = 1;
+		float p = texture(proba_tex0,(rayStart+step*dir).xyz).x;
+		float tmp[4];
+		tmp[1] = texture(proba_tex1,(rayStart+step*dir).xyz).x;
+		tmp[2] = texture(proba_tex2,(rayStart+step*dir).xyz).x;
+		tmp[3] = texture(proba_tex3,(rayStart+step*dir).xyz).x;
+		type = 0;
+		while(i<4){
+			if (tmp[i] > p) { p = tmp[i]; type = i; }
+			i++;
+		}
+		acc = texture(color_texs,vec2(voxel,type)).a;
         accs = texture(volume_label,(rayStart+step*dir).xyz).r;
         //acc = texture(preIntegerationTable,vec2(preVoxel,voxel)).a;
 		if(tmpLabel>0.3f&&acc>0.0002)
@@ -333,9 +328,9 @@ vec4 oneDimensionTransfer(){
             //acc = acc*pow(1+length(getGradientNormal((rayStart+step*dir).xyz)),4.0);
             //color = color + microfacet( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*acc;
             if(Scat)
-            color = color + scatter[0]*accs*LeovyColor( (rayStart+step*dir).xyz, texture(color_texs,vec2(voxel,0)).rgb,dir.xyz)*(1-alpha)*(acc);
+            color = color + scatter[0]*accs*LeovyColor( (rayStart+step*dir).xyz, texture(color_texs,vec2(voxel,type)).rgb,dir.xyz)*(1-alpha)*(acc);
             else
-            color = color + LeovyColor( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*(acc);
+            color = color + LeovyColor( (rayStart+step*dir).xyz, texture(color_texs,vec2(voxel,type)).rgb,dir.xyz)*(1-alpha)*(acc);
             //color = color + LeovyColor( (rayStart+step*dir).xyz, vec3(voxelLabel,1.0-voxelLabel,0).rgb,dir.xyz)*(1-alpha)*acc;
             //float green = voxelLabel>0.5?voxelLabel*2-1.0:voxelLabel;
             //color = color +  vec3(voxelLabel,green,1.0-voxelLabel).rgb*(1-alpha)*acc;

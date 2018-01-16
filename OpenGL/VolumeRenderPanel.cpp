@@ -209,6 +209,7 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
     }*/
     eyePosition[0] = eyePosition[1] = eyePosition[2] = 0.0;
     fin.close();
+	current_type = 0;
     unsigned int** supervoxel = new unsigned int*[w];
     label = new int*[w];
     cout<<maxAndMin[0]<<' '<<maxAndMin[1]<<endl;
@@ -1365,6 +1366,7 @@ void VolumeRenderPanel::undoClip(){
     update();
 }
 
+#pragma region interation
 void VolumeRenderPanel::mousePressEvent(QMouseEvent *event)
 {
     if(event->button()==Qt::LeftButton)
@@ -1518,21 +1520,6 @@ void VolumeRenderPanel::mouseMoveEvent(QMouseEvent *event)
         }
     }
 }
-void VolumeRenderPanel::createPIT(){
-        // create texture
-        GLuint preintName;
-        glsl.glActiveTex(GL_TEXTURE10);
-        glGenTextures(1,&preintName);
-        glBindTexture(GL_TEXTURE_2D,preintName);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0,
-            GL_RGBA,GL_FLOAT, &lookupImg);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        GLint loc = glsl.getUniformLocation("preIntegerationcolor");
-        glsl.setUniform(loc, 10);
-}
 void VolumeRenderPanel::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if(event->button()==Qt::LeftButton){
@@ -1583,10 +1570,12 @@ void VolumeRenderPanel::wheelEvent(QWheelEvent *event){
         break;
     }
 }
+#pragma endregion
+
 void VolumeRenderPanel::changeWindowFilter(float min,float max){
     glsl.use(0);
-    this->min[0] = min;
-    this->max[0] = max;
+    this->min[current_type] = min;
+    this->max[current_type] = max;
     glsl.setUniformArray("WindowMax[0]",max_label,this->max);
     glsl.setUniformArray("WindowMin[0]",max_label,this->min);
 	if (Scat)
@@ -1600,6 +1589,21 @@ void VolumeRenderPanel::changeSliceZ(int a,int b){
     //bindData();
     //updateGL();
     glsl.setUniform("slice",a);
+}
+void VolumeRenderPanel::createPIT(){
+        // create texture
+        GLuint preintName;
+        glsl.glActiveTex(GL_TEXTURE10);
+        glGenTextures(1,&preintName);
+        glBindTexture(GL_TEXTURE_2D,preintName);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0,
+            GL_RGBA,GL_FLOAT, &lookupImg);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GLint loc = glsl.getUniformLocation("preIntegerationcolor");
+        glsl.setUniform(loc, 10);
 }
 void VolumeRenderPanel::resetMVPN(){
 	glsl.setUniform("Kd", 0.9f, 0.5f, 0.3f);
@@ -1666,13 +1670,13 @@ float VolumeRenderPanel::clamp(float value,float min,float max){
 
 void VolumeRenderPanel::updateLight(float ambient[],float diffuse[],float specular[]){
     for(int i=0;i<3;i++){
-        am[0][i] = ambient[i];
-        diff[0][i] = diffuse[i];
-        spec[0][i] = specular[i];
+        am[current_type][i] = ambient[i];
+        diff[current_type][i] = diffuse[i];
+        spec[current_type][i] = specular[i];
     }
-	glsl.setUniform("La[0]", ambient[0],ambient[1],ambient[2]);
-	glsl.setUniform("Ld[0]", diffuse[0],diffuse[1],diffuse[2]); 
-	glsl.setUniform("Ls[0]", specular[0],specular[1],specular[2]); 
+	glsl.setUniformArray("La[0]", max_label*3,am );
+	glsl.setUniformArray("Ld[0]", max_label*3,diff); 
+	glsl.setUniformArray("Ls[0]", max_label*3,spec); 
 	//glsl.setUniform("LightPosition", specular[0],specular[1],specular[2]); 
 
 }
@@ -1688,12 +1692,11 @@ void VolumeRenderPanel::updateTF(std::vector<float> &tf){
         color[i][2] = tf[i*4+2];
         color[i][3] = tf[i*4+3];
         opacity[i]  = tf[i*4+3];
-		for (int j = 0; j < 4; j++) {
-			color_texs[j][i][0] = tf[i*4];
-			color_texs[j][i][1] = tf[i*4+1];
-			color_texs[j][i][2] = tf[i*4+2];
-			color_texs[j][i][3] = tf[i*4+3];
-		}
+		int j = current_type;
+		color_texs[j][i][0] = tf[i*4];
+		color_texs[j][i][1] = tf[i*4+1];
+		color_texs[j][i][2] = tf[i*4+2];
+		color_texs[j][i][3] = tf[i*4+3];
         fout<<color[i][0]<<' '<<color[i][1]<<' '<<color[i][2]<<endl;
         fout2<<opacity[i]<<endl;
     }
@@ -1704,7 +1707,7 @@ void VolumeRenderPanel::updateTF(std::vector<float> &tf){
     glTexImage1D(GL_TEXTURE_1D, 0,GL_RGBA,256,0, GL_RGBA,GL_FLOAT,color);
     glsl.glActiveTex(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_1D_ARRAY, textureID3);
-	glTexSubImage2D(GL_TEXTURE_1D_ARRAY, 0, 0,  0, 256,  1, GL_RGBA, GL_FLOAT, color_texs[0]);
+	glTexSubImage2D(GL_TEXTURE_1D_ARRAY, 0, 0,  current_type, 256,  1, GL_RGBA, GL_FLOAT, color_texs[current_type]);
     if(Scat){
 		recomputeLV();
     }
@@ -1714,6 +1717,12 @@ void VolumeRenderPanel::updateTF(std::vector<float> &tf){
 }
 
 ofstream& operator<<(ofstream& out,VolumeRenderPanel &data){
+	int size = data.polygons[0].size();
+	out << size << '\n';
+	for (int i = 0; i < size; i++)
+		out <<data.polygons[0].at(i).x() << ' ' << data.polygons[0].at(i).y() << '\n';
+	for (int i = 0; i < size; i++)
+		out << data.qcolors[0][i].red() << ' ' << data.qcolors[0][i].green() << ' ' << data.qcolors[0][i].blue() << ' ' << data.qcolors[0][i].alpha() << '\n';
     for(int i=0;i<4;i++)
         for(int j=0;j<4;j++)
             out<<data.model[i][j]<<' ';
@@ -1728,11 +1737,43 @@ ofstream& operator<<(ofstream& out,VolumeRenderPanel &data){
         out<<data.am[0][i]<<' '<<data.diff[0][i]<<' '<<data.spec[0][i]<<' ';
     out<<'\n';
 	out << data.sharp[0]<< endl;
-	out << data.scatter[0]<< endl;
+	out << data.scatter[0]<<endl;
+	for (int j = 1; j < data.max_label; j++) {
+		out << data.min[j] << ' '<< data.max[j]<<endl;
+		for (int i = 0; i < 3; i++)
+			out << data.am[j][i] <<' '<<data.diff[j][i]<<' '<< data.spec[j][i]<<endl;
+		out << data.sharp[j]<<endl;
+		out << data.scatter[j] << endl;
+	}
+	for (int j = 1; j < data.max_label; j++) {
+		size = data.polygons[j].size();
+		out << size << '\n';
+		for (int i = 0; i < size; i++)
+			out <<data.polygons[j].at(i).x() << ' ' << data.polygons[j].at(i).y() << '\n';
+		for (int i = 0; i < size; i++)
+			out << data.qcolors[j][i].red() << ' ' << data.qcolors[j][i].green() << ' ' << data.qcolors[j][i].blue() << ' ' << data.qcolors[j][i].alpha() << '\n';
+	}
     return out;
 }
 
 ifstream& operator>>(ifstream& in,VolumeRenderPanel &data){
+	int size, r, g, b, a;
+	double x, y;
+	in >> size;
+	data.polygons[0].resize(size);
+	for (int i = 0; i < size; i++) {
+		in >> x;
+		in >> y;
+		data.polygons[0][i].setX(x);
+		data.polygons[0][i].setY(y);
+	}
+	data.qcolors[0].resize(size);
+	for (int i = 0; i < size; i++)
+	{
+		in >> r >> g >> b >> a;
+		data.qcolors[0][i].setRed(r); data.qcolors[0][i].setGreen(g);
+		data.qcolors[0][i].setBlue(b); data.qcolors[0][i].setAlpha(a);
+	}
     for(int i=0;i<4;i++)
         for(int j=0;j<4;j++)
             in>>data.model[i][j];
@@ -1742,13 +1783,12 @@ ifstream& operator>>(ifstream& in,VolumeRenderPanel &data){
     in>>data.min[0]>>data.max[0];
     for(int i=0;i<3;i++)
         in>>data.am[0][i]>>data.diff[0][i]>>data.spec[0][i];
-	if (!in.eof()) {
-		in >> data.sharp[0];
+	if (in >> data.sharp[0]) {
 		in >> data.scatter[0];
 	}
-	if (!in.eof()) {
-		for (int j = 1; j < 4; j++) {
-			in >> data.min[j] >> data.max[j];
+	if (in >> data.min[1]&&in >> data.max[1]) {
+		for (int j = 1; j < data.max_label; j++) {
+			if(j>1)in >> data.min[j] >> data.max[j];
 			for (int i = 0; i < 3; i++)
 				in >> data.am[j][i] >> data.diff[j][i] >> data.spec[j][i];
 			in >> data.sharp[j];
@@ -1766,7 +1806,39 @@ ifstream& operator>>(ifstream& in,VolumeRenderPanel &data){
 			data.sharp[j] = data.sharp[0];
 			data.scatter[j] = data.scatter[0];
 		}
-
+	}
+	if (in >> size) {
+		for (int k = 1; k < 4; k++) {
+			if(k>1) in >> size;
+			data.polygons[k].resize(size);
+			for (int i = 0; i < size; i++) {
+				in >> x;
+				in >> y;
+				data.polygons[k][i].setX(x);
+				data.polygons[k][i].setY(y);
+			}
+			data.qcolors[k].resize(size);
+			for (int i = 0; i < size; i++)
+			{
+				in >> r >> g >> b >> a;
+				data.qcolors[k][i].setRed(r); data.qcolors[k][i].setGreen(g);
+				data.qcolors[k][i].setBlue(b); data.qcolors[k][i].setAlpha(a);
+			}
+		}
+	}
+	else {
+		for (int k = 1; k < 4; k++) {
+			data.polygons[k].resize(2);
+			data.polygons[k][0].setX(0);
+			data.polygons[k][0].setY(200);
+			data.polygons[k][1].setX(512);
+			data.polygons[k][1].setY(0);
+			data.qcolors[k].resize(2);
+			for (int i = 0; i < 2; i++) {
+				data.qcolors[k][i].setRed(255); data.qcolors[k][i].setGreen(255);
+				data.qcolors[k][i].setBlue(255); data.qcolors[k][i].setAlpha(255);
+			}
+		}
 	}
     return in;
 }
@@ -2001,4 +2073,8 @@ void VolumeRenderPanel::keyPressEvent(QKeyEvent *event){
     glsl.setUniform("LightPosition",glm::vec4(eyePosition[0],eyePosition[1],eyePosition[2],1.0));
     glsl.setUniform("View",view);
     updateGL();*/
+}
+
+void VolumeRenderPanel::changeClassType(int index) {
+	current_type = index;
 }

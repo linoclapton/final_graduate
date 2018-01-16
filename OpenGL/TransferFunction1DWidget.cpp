@@ -418,6 +418,21 @@ ofstream& operator<<(ofstream& out, TransferFunction1DWidget& data){
     return out;        
 }
 
+void TransferFunction1DWidget::save(QPolygonF &p,QVector<QColor> &c) {
+    p = render_hover_points_->points();
+	c = render_hover_points_->getRepresentColor();
+}
+
+void TransferFunction1DWidget::load(QPolygonF polygon,QVector<QColor> c) {
+	int size = polygon.size();
+    render_hover_points_->setPoints(polygon);
+	render_hover_points_->setPointLock(0, QRenderHoverPoints::LockToLeft);
+	render_hover_points_->setPointLock(size-1, QRenderHoverPoints::LockToRight);
+    for(int i=0;i<size;i++)
+	render_hover_points_->setColor(i,c[i]);
+    OnHoverPointChanged();
+}
+
 ifstream& operator>>(ifstream& in, TransferFunction1DWidget& data){
     int size,r,g,b,a;
     double x,y;

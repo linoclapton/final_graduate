@@ -35,6 +35,9 @@ public:
 	void GetTfColorAndAlpha( int tf_size, vector< float >& tf_values );
 	void GetTfColor( int tf_size, vector< float >& tf_values );
 	void GetTfAlpha( int tf_size, vector< float >& tf_values );
+	
+	void load(QPolygonF p,QVector<QColor> c);
+	void save(QPolygonF &p,QVector<QColor> &c);
 
     friend ofstream& operator<<(ofstream &out,TransferFunction1DWidget &widget);
     friend ifstream& operator>>(ifstream &in ,TransferFunction1DWidget &widget);

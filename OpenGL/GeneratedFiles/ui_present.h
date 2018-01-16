@@ -67,7 +67,7 @@ public:
     QCheckBox *checkBox_background;
     QPushButton *button_cleargraphcut;
     QLabel *tfPanel;
-    QComboBox *comboBox;
+    QComboBox *comboBox_type;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -291,10 +291,10 @@ public:
 
         gridLayout->addWidget(tfPanel, 20, 0, 1, 4);
 
-        comboBox = new QComboBox(centralWidget);
-        comboBox->setObjectName(QStringLiteral("comboBox"));
+        comboBox_type = new QComboBox(centralWidget);
+        comboBox_type->setObjectName(QStringLiteral("comboBox_type"));
 
-        gridLayout->addWidget(comboBox, 10, 3, 1, 1);
+        gridLayout->addWidget(comboBox_type, 10, 3, 1, 1);
 
 
         horizontalLayout->addLayout(gridLayout);
@@ -338,8 +338,8 @@ public:
         checkBox_background->setText(QString());
         button_cleargraphcut->setText(QApplication::translate("PresentClass", "clear", 0));
         tfPanel->setText(QString());
-        comboBox->clear();
-        comboBox->insertItems(0, QStringList()
+        comboBox_type->clear();
+        comboBox_type->insertItems(0, QStringList()
          << QApplication::translate("PresentClass", "1\347\261\273", 0)
          << QApplication::translate("PresentClass", "2\347\261\273", 0)
          << QApplication::translate("PresentClass", "3\347\261\273", 0)

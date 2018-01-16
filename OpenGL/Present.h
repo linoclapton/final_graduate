@@ -54,6 +54,7 @@ private slots:
     void changeBackColor();
     void changeMotionStatus(int state);
     void changeSlider(float min,float max);
+	void changeType(int);
 
 };
 
