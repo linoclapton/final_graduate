@@ -35,7 +35,7 @@
 
 const char *sSDKname     = "conjugateGradient";
 extern "C"
-float* gc( int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float i_min, float i_max);
+float* gc( int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max);
 
 
 class DataBlock{
@@ -214,7 +214,7 @@ __global__ void convection(float *p,DataBlock block) {
 
 static bool flag = true;
 extern "C"
-float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float i_min, float i_max)
+float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max)
 {
 	Clock clock;
 	static int M = 0, N = 0, nz = 0, *I = NULL, *J = NULL;
@@ -247,8 +247,8 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 		checkCudaErrors(cudaMalloc(&d_r, sizeof(float)*count));
 		checkCudaErrors(cudaMalloc(&(block.dimension), sizeof(int)*3));
 		checkCudaErrors(cudaMalloc(&(block.Nd), sizeof(int)*3));
-		checkCudaErrors(cudaMalloc(&(block.max), sizeof(float)));
-		checkCudaErrors(cudaMalloc(&(block.min), sizeof(float)));
+		checkCudaErrors(cudaMalloc(&(block.max), sizeof(float)*4));
+		checkCudaErrors(cudaMalloc(&(block.min), sizeof(float)*4));
 		checkCudaErrors(cudaMalloc(&(block.DIM), sizeof(int)));
 		checkCudaErrors(cudaMalloc(&(block.opacity), sizeof(float)*256));
 		checkCudaErrors(cudaMemcpy(block.udata, i_udata, sizeof(float)*dims[0] * dims[1] * dims[2],cudaMemcpyHostToDevice));
@@ -296,8 +296,8 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 	}
 	checkCudaErrors(cudaMemcpy(block.opacity,i_opacity, sizeof(float)*256,cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(d_r, init_bound,sizeof(float)*count,cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMemcpy(block.min, &i_min, sizeof(int),cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMemcpy(block.max, &i_max, sizeof(int),cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(block.min, i_min, sizeof(int),cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(block.max, i_max, sizeof(int),cudaMemcpyHostToDevice));
 	//checkCudaErrors(cudaMemcpy(block.idx, &i, sizeof(int),cudaMemcpyHostToDevice));
 	int i;
 	int tb[] = { 4,8,8 };

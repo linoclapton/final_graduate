@@ -24,7 +24,7 @@ typedef Eigen::Triplet<double> T;
 static const int DIM = 1;
 static const int PROB_DIM = 1;
 extern "C" 
-float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float i_min, float i_max);
+float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max);
 
 float VolumeRenderPanel::index(int x, int y, int z) {
 	float d = udata[DIM*x*dimension[1]*dimension[0]+DIM*y*dimension[0]+DIM*z];
@@ -157,7 +157,7 @@ float* VolumeRenderPanel::upWindScheme2(int Nx, int Ny, int Nz) {
 			}
 		}
 	}*/
-	float *lv = gc(Nx, Ny, Nz,udata,dimension,DIM,opacity,this->min[0],this->max[0]);
+	float *lv = gc(Nx, Ny, Nz,udata,dimension,DIM,opacity,this->min,this->max);
 	float mx = lv[0];
 	float mn = lv[0];
 	//float mx2 = p[0];
@@ -1691,8 +1691,8 @@ void VolumeRenderPanel::updateTF(std::vector<float> &tf){
         color[i][1] = tf[i*4+1];
         color[i][2] = tf[i*4+2];
         color[i][3] = tf[i*4+3];
-        opacity[i]  = tf[i*4+3];
 		int j = current_type;
+        opacity[i+j*256]  = tf[i*4+3];
 		color_texs[j][i][0] = tf[i*4];
 		color_texs[j][i][1] = tf[i*4+1];
 		color_texs[j][i][2] = tf[i*4+2];
@@ -2028,23 +2028,23 @@ void VolumeRenderPanel::keyPressEvent(QKeyEvent *event){
 		recomputeLV();
 	}
 	else if (event->key() == Qt::Key_9) {
-		if (sharp[0] > 1.0f)
-			sharp[0] /= 2;
+		if (sharp[current_type] > 1.0f)
+			sharp[current_type] /= 2;
 		glsl.setUniformArray("sharp[0]",max_label, sharp);
 	}
 	else if (event->key() == Qt::Key_0) {
-		if (sharp[0] < 512.0f)
-			sharp[0] *= 2;
+		if (sharp[current_type] < 512.0f)
+			sharp[current_type] *= 2;
 		glsl.setUniformArray("sharp[0]",max_label, sharp);
 	}
 	else if (event->key() == Qt::Key_Minus) {
-		if (scatter[0] > 0.0f)
-			scatter[0] -= 0.1;
+		if (scatter[current_type] > 0.0f)
+			scatter[current_type] -= 0.1;
 		glsl.setUniformArray("scatter[0]", max_label,scatter);
 	}
 	else if (event->key() == Qt::Key_Equal) {
-		if (scatter[0] < 1.0f)
-			scatter[0] += 0.1;
+		if (scatter[current_type] < 1.0f)
+			scatter[current_type] += 0.1;
 		glsl.setUniformArray("scatter[0]", max_label,scatter);
 	}
     updateGL();

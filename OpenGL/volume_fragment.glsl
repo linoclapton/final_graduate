@@ -181,7 +181,7 @@ vec3 LeovyColor(vec3 pos,vec3 vcolor,vec3 ec) {
     diffuse = vcolor*Ld[type]*NL;
     color  += diffuse;
     n = n/gradLength;
-    specular = vcolor*Ls[type]*pow(max(abs(dot(n,H)),0.0),sharp[0]);
+    specular = vcolor*Ls[type]*pow(max(abs(dot(n,H)),0.0),sharp[type]);
     color += specular; 
     vec3 ambient = vcolor*La[type];
     color  += ambient;
@@ -328,7 +328,7 @@ vec4 oneDimensionTransfer(){
             //acc = acc*pow(1+length(getGradientNormal((rayStart+step*dir).xyz)),4.0);
             //color = color + microfacet( (rayStart+step*dir).xyz, texture(color_tex,voxel).rgb,dir.xyz)*(1-alpha)*acc;
             if(Scat)
-            color = color + scatter[0]*accs*LeovyColor( (rayStart+step*dir).xyz, texture(color_texs,vec2(voxel,type)).rgb,dir.xyz)*(1-alpha)*(acc);
+            color = color + scatter[type]*accs*LeovyColor( (rayStart+step*dir).xyz, texture(color_texs,vec2(voxel,type)).rgb,dir.xyz)*(1-alpha)*(acc);
             else
             color = color + LeovyColor( (rayStart+step*dir).xyz, texture(color_texs,vec2(voxel,type)).rgb,dir.xyz)*(1-alpha)*(acc);
             //color = color + LeovyColor( (rayStart+step*dir).xyz, vec3(voxelLabel,1.0-voxelLabel,0).rgb,dir.xyz)*(1-alpha)*acc;

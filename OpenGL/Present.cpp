@@ -239,5 +239,9 @@ void Present::changeType(int type) {
 	ui.openGLWidget->changeClassType(type);
 	cur = ui.openGLWidget->current_type;
 	tf1DWidget->load(ui.openGLWidget->polygons[cur], ui.openGLWidget->qcolors[cur]);
+	tf1DWidget->update();
+	changeLight(ui.openGLWidget->am[cur], ui.openGLWidget->diff[cur], ui.openGLWidget->spec[cur]);
+	float mx = ui.openGLWidget->max[cur], mi = ui.openGLWidget->min[cur];
+	changeSlider(mi, mx);
     ui.openGLWidget->updateGL();
 }

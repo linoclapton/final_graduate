@@ -47,6 +47,8 @@ public:
 	static const int max_label = 4;
 	QPolygonF polygons[max_label];
 	QVector<QColor> qcolors[max_label];
+    float am[max_label][3],diff[max_label][3],spec[max_label][3];
+    float min[max_label],max[max_label];
 	int current_type;
 signals:
     void changeSlider(float min,float max);
@@ -128,7 +130,7 @@ private:
     int gradientGrayData[256][256];
     int volumeX,volumeY,volumeZ;
     float spaceX,spaceY,spaceZ;
-    float opacity[256];
+    float opacity[256*max_label];
     float histgram[256];
     ULY::Clock clock;
     GLuint FBO;
@@ -161,8 +163,6 @@ private:
     int** label;
 	GLuint proba_tex[max_label];
 	unsigned char * probability[max_label];
-    float am[max_label][3],diff[max_label][3],spec[max_label][3];
 	float scatter[max_label], sharp[max_label];
-    float min[max_label],max[max_label];
 };
 
