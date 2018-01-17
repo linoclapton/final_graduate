@@ -164,5 +164,6 @@ private:
 	GLuint proba_tex[max_label];
 	unsigned char * probability[max_label];
 	float scatter[max_label], sharp[max_label];
+	float* prob;
 };
 

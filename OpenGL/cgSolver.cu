@@ -35,7 +35,7 @@
 
 const char *sSDKname     = "conjugateGradient";
 extern "C"
-float* gc( int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max);
+float* gc( int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max,float* i_prob);
 
 
 class DataBlock{
@@ -45,6 +45,7 @@ public:
 	int *DIM;
 	float* opacity;
 	float* udata;
+	float* prob;
 	float *min;
 	float *max;
 	int *Nd;
@@ -138,8 +139,8 @@ void gen(int *I, int *J, float *val, int N, int nz,int X,int Y,int Z)
 	clock.end("prepare CSR A");
 }
 // dim 1 dimension 3 windowMin&Max 2 opacity 1 udata 1 Nx,Ny,Nz 
-__device__ float getOpacity(float* opacity,float g) {
-	return  opacity[int(g * 255)];
+__device__ float getOpacity(float* opacity,float g,float type) {
+	return  opacity[int(g * 255+type*256)];
 }
 __device__ float index(DataBlock block,int x, int y, int z) {
 	float* udata = block.udata;
@@ -152,6 +153,15 @@ __device__ float index(DataBlock block,int x, int y, int z) {
 	if (d > mx) return 1.0;
 
 	return (d - mn) / (mx - mn);
+}
+__device__ int typeIndex(DataBlock block,int x, int y, int z) {
+	float* prob= block.prob;
+	int DIM = block.DIM[0];
+	int* dimension = block.dimension;
+	float mx = block.max[0];
+	float mn = block.min[0];
+	int type = prob[DIM*x*dimension[1] * dimension[0] + DIM*y*dimension[0] + DIM*z];
+	return type;
 }
 
 __global__ void convection(float *p,DataBlock block) {
@@ -169,7 +179,7 @@ __global__ void convection(float *p,DataBlock block) {
 			p[offset] = 1.0 - getOpacity(block.opacity, index(block, x, y, z));
 			return;
 		}*/
-	float op = getOpacity(block.opacity, index(block, x, y, z));
+	float op = getOpacity(block.opacity, index(block, x, y, z),typeIndex(block,x,y,z));
 	for (int i = 0; i < 25; i++) {
 		int right = offset + 1;
 		int left = offset - 1;
@@ -214,7 +224,7 @@ __global__ void convection(float *p,DataBlock block) {
 
 static bool flag = true;
 extern "C"
-float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max)
+float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max, float* i_prob)
 {
 	Clock clock;
 	static int M = 0, N = 0, nz = 0, *I = NULL, *J = NULL;
@@ -237,21 +247,22 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 	static DataBlock block;
 	static int *dimension;
 	static float *opacity;
-	static float *udata;
     /* Generate a random tridiagonal symmetric matrix in CSR format */
     M = N = count;
 	clock.start();
 	clock.start();
 	if (flag) {
 		checkCudaErrors(cudaMalloc(&(block.udata), sizeof(float)*dims[0] * dims[1] * dims[2]));
+		checkCudaErrors(cudaMalloc(&(block.prob), sizeof(float)*dims[0] * dims[1] * dims[2]));
 		checkCudaErrors(cudaMalloc(&d_r, sizeof(float)*count));
 		checkCudaErrors(cudaMalloc(&(block.dimension), sizeof(int)*3));
 		checkCudaErrors(cudaMalloc(&(block.Nd), sizeof(int)*3));
 		checkCudaErrors(cudaMalloc(&(block.max), sizeof(float)*4));
 		checkCudaErrors(cudaMalloc(&(block.min), sizeof(float)*4));
 		checkCudaErrors(cudaMalloc(&(block.DIM), sizeof(int)));
-		checkCudaErrors(cudaMalloc(&(block.opacity), sizeof(float)*256));
+		checkCudaErrors(cudaMalloc(&(block.opacity), sizeof(float)*256*4));
 		checkCudaErrors(cudaMemcpy(block.udata, i_udata, sizeof(float)*dims[0] * dims[1] * dims[2],cudaMemcpyHostToDevice));
+		checkCudaErrors(cudaMemcpy(block.prob, i_prob, sizeof(float)*dims[0] * dims[1] * dims[2],cudaMemcpyHostToDevice));
 		checkCudaErrors(cudaMemcpy(block.dimension,dims, sizeof(int)*3,cudaMemcpyHostToDevice));
 		checkCudaErrors(cudaMemcpy(block.Nd,Nd, sizeof(int)*3,cudaMemcpyHostToDevice));
 		checkCudaErrors(cudaMemcpy(block.DIM,&dim, sizeof(int),cudaMemcpyHostToDevice));
@@ -294,7 +305,7 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 		val = (float *)malloc(sizeof(float)*nz);
 		gen(I, J, val, N, nz, X, Y, Z);
 	}
-	checkCudaErrors(cudaMemcpy(block.opacity,i_opacity, sizeof(float)*256,cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(block.opacity,i_opacity, sizeof(float)*256*4,cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(d_r, init_bound,sizeof(float)*count,cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(block.min, i_min, sizeof(int),cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(block.max, i_max, sizeof(int),cudaMemcpyHostToDevice));

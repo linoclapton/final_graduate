@@ -24,7 +24,7 @@ typedef Eigen::Triplet<double> T;
 static const int DIM = 1;
 static const int PROB_DIM = 1;
 extern "C" 
-float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max);
+float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max,float* i_prob);
 
 float VolumeRenderPanel::index(int x, int y, int z) {
 	float d = udata[DIM*x*dimension[1]*dimension[0]+DIM*y*dimension[0]+DIM*z];
@@ -157,7 +157,7 @@ float* VolumeRenderPanel::upWindScheme2(int Nx, int Ny, int Nz) {
 			}
 		}
 	}*/
-	float *lv = gc(Nx, Ny, Nz,udata,dimension,DIM,opacity,this->min,this->max);
+	float *lv = gc(Nx, Ny, Nz,udata,dimension,DIM,opacity,this->min,this->max,prob);
 	float mx = lv[0];
 	float mn = lv[0];
 	//float mx2 = p[0];
@@ -809,18 +809,32 @@ void VolumeRenderPanel::updateTex(){
 	for (int i = 0; i < max_label; i++) {
 		probability[i] = new unsigned char[d*h*w]; 
 	}
+	prob = new float[d*h*w];
 	FILE *f = fopen("probability", "rb");
+	
 	if (f != NULL) {
 		for (int z = 0; z < w - 2; z++) {
 			for (int y = 0; y < h - 2; y++) {
 				for (int x = 0; x < d - 2; x++) {
 					int cur = (z + 1)*d*h + (y + 1)*d + x + 1;
+					float k = 0.0f; float k_index = 0;
 					for (int i = 0; i < max_label; i++) {
 						float t[1];
 						fread(t, 1, 4, f);
 						probability[i][cur] = t[0] * 255;
-						//                    if(probability[i][cur]==0)probability[i][cur]=1;
+						// if(probability[i][cur]==0)probability[i][cur]=1;
+						if (t[0] > k) { k = t[0]; k_index = i; }
 					}
+					prob[cur] = k_index;
+				}
+			}
+		}
+		for (int z = 0; z < w; z++) {
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < d; x++) {
+					int cur = (z )*d*h + (y)*d + x;
+					if(z==0||y==0||x==0||z==w-1||y==h-1||x==d-1)
+						prob[cur] =0;
 				}
 			}
 		}

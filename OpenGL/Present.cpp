@@ -55,6 +55,7 @@ Present::Present(QWidget *parent)
     connect(ui.button_undoclip,SIGNAL(clicked()),ui.openGLWidget,SLOT(undoClip()));
 	connect(ui.comboBox_type, SIGNAL(currentIndexChanged(int)), this, SLOT(changeType(int)));
 }
+
 void Present::changeLight(float* am,float* diff,float* spec){
     for(int i=0;i<3;i++){
         ambient[i] = am[i];
