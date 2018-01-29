@@ -21,7 +21,7 @@
 bool Scat; 
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
-static const int DIM = 1;
+static const int DIM = 2;
 static const int PROB_DIM = 1;
 extern "C" 
 float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opacity, float *i_min, float *i_max,float* i_prob);
@@ -178,7 +178,8 @@ VolumeRenderPanel::VolumeRenderPanel(QWidget* parent):QGLWidget(parent){
 	//filename = "bonsai.bin";
 	//filename = "heart.bin";
     //filename = "blood.bin";
-    filename = "tooth.bin";
+    //filename = "tooth.bin";
+    filename = "fivix.bin";
     //filename = "foot.bin";
     //filename = "buckyball.bin";
     //filename = "manix.bin";
@@ -805,18 +806,17 @@ void VolumeRenderPanel::updateTex(){
 
     glsl.glActiveTex(GL_TEXTURE11);
     glsl.setUniform("graphCutTex",11);
-
+	int dd = d / DIM, dh = h/DIM, dw = w/DIM;
 	for (int i = 0; i < max_label; i++) {
-		probability[i] = new unsigned char[d*h*w]; 
+		probability[i] = new unsigned char[dd*dh*dw]; 
 	}
-	prob = new float[d*h*w];
+	prob = new float[dd*dh*dw];
 	FILE *f = fopen("probability", "rb");
-	
 	if (f != NULL) {
-		for (int z = 0; z < w - 2; z++) {
-			for (int y = 0; y < h - 2; y++) {
-				for (int x = 0; x < d - 2; x++) {
-					int cur = (z + 1)*d*h + (y + 1)*d + x + 1;
+		for (int z = 0; z < dw - 2; z++) {
+			for (int y = 0; y < dh - 2; y++) {
+				for (int x = 0; x < dd - 2; x++) {
+					int cur = (z + 1)*dd*dh + (y + 1)*dd + x + 1;
 					float k = 0.0f; float k_index = 0;
 					for (int i = 0; i < max_label; i++) {
 						float t[1];
@@ -829,22 +829,26 @@ void VolumeRenderPanel::updateTex(){
 				}
 			}
 		}
-		for (int z = 0; z < w; z++) {
-			for (int y = 0; y < h; y++) {
-				for (int x = 0; x < d; x++) {
-					int cur = (z )*d*h + (y)*d + x;
-					if(z==0||y==0||x==0||z==w-1||y==h-1||x==d-1)
+		for (int z = 0; z < dw; z++) {
+			for (int y = 0; y < dh; y++) {
+				for (int x = 0; x < dd; x++) {
+					int cur = (z )*dd*dh + (y)*dd + x;
+					if(z==0||y==0||x==0||z==dw-1||y==dh-1||x==dd-1)
 						prob[cur] =0;
 				}
 			}
 		}
+		fclose(f);
 	}
 	else {
-		for (int i = 0; i < max_label; i++) {
-			probability[i] = NULL;
+		for (int z = 0; z < dw*dh*dd; z++) {
+			for (int i = 1; i < max_label; i++) {
+				probability[i][z] = 0;
+			}
+			probability[0][z] = 255;
+			prob[z] = 0;
 		}
 	}
-	fclose(f);
 	for (int i = 0; i < max_label; i++) {
 		glsl.glActiveTex(GL_TEXTURE13 + i);
 		glGenTextures(1, &proba_tex[i]);
@@ -854,7 +858,7 @@ void VolumeRenderPanel::updateTex(){
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glsl.texImage3D(GL_TEXTURE_3D, 0,GL_RED, d, h, w, 0, GL_RED, GL_UNSIGNED_BYTE, probability[i]);
+		glsl.texImage3D(GL_TEXTURE_3D, 0,GL_RED, dd, dh,dw, 0, GL_RED, GL_UNSIGNED_BYTE, probability[i]);
 		char ttt[30];
 		sprintf(ttt, "proba_tex%d", i);
 		glsl.setUniform(ttt,13+i);

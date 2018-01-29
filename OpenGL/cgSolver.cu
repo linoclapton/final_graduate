@@ -157,10 +157,10 @@ __device__ float index(DataBlock block,int x, int y, int z) {
 __device__ int typeIndex(DataBlock block,int x, int y, int z) {
 	float* prob= block.prob;
 	int DIM = block.DIM[0];
-	int* dimension = block.dimension;
+	int* Nd = block.Nd;
 	float mx = block.max[0];
 	float mn = block.min[0];
-	int type = prob[DIM*x*dimension[1] * dimension[0] + DIM*y*dimension[0] + DIM*z];
+	int type = prob[x*Nd[1] * Nd[0] + y*Nd[0] + z];
 	return type;
 }
 
@@ -253,7 +253,7 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 	clock.start();
 	if (flag) {
 		checkCudaErrors(cudaMalloc(&(block.udata), sizeof(float)*dims[0] * dims[1] * dims[2]));
-		checkCudaErrors(cudaMalloc(&(block.prob), sizeof(float)*dims[0] * dims[1] * dims[2]));
+		checkCudaErrors(cudaMalloc(&(block.prob), sizeof(float)*Nd[0] *Nd[1] *Nd[2]));
 		checkCudaErrors(cudaMalloc(&d_r, sizeof(float)*count));
 		checkCudaErrors(cudaMalloc(&(block.dimension), sizeof(int)*3));
 		checkCudaErrors(cudaMalloc(&(block.Nd), sizeof(int)*3));
@@ -262,7 +262,7 @@ float* gc(int X, int Y, int Z, float* i_udata, int *dims, int dim, float* i_opac
 		checkCudaErrors(cudaMalloc(&(block.DIM), sizeof(int)));
 		checkCudaErrors(cudaMalloc(&(block.opacity), sizeof(float)*256*4));
 		checkCudaErrors(cudaMemcpy(block.udata, i_udata, sizeof(float)*dims[0] * dims[1] * dims[2],cudaMemcpyHostToDevice));
-		checkCudaErrors(cudaMemcpy(block.prob, i_prob, sizeof(float)*dims[0] * dims[1] * dims[2],cudaMemcpyHostToDevice));
+		checkCudaErrors(cudaMemcpy(block.prob, i_prob, sizeof(float)*Nd[0] *Nd[1] *Nd[2],cudaMemcpyHostToDevice));
 		checkCudaErrors(cudaMemcpy(block.dimension,dims, sizeof(int)*3,cudaMemcpyHostToDevice));
 		checkCudaErrors(cudaMemcpy(block.Nd,Nd, sizeof(int)*3,cudaMemcpyHostToDevice));
 		checkCudaErrors(cudaMemcpy(block.DIM,&dim, sizeof(int),cudaMemcpyHostToDevice));

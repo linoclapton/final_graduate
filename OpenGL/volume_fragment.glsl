@@ -117,7 +117,13 @@ vec3 getGradientNormalAll(vec3 pos){
 		texture(volume_tex,(pos - vec3(0.0, 0.0, spaceZ))).r- texture(volume_tex,(pos + vec3(0.0, 0.0, spaceZ))).r
 		);
 	return normalize(n);
-
+}
+vec3 getGradientNoNormal(vec3 pos){
+   	vec3 n = vec3(texture(volume_tex,(pos - vec3(spaceX, 0.0, 0.0))).r - texture(volume_tex,(pos + vec3(spaceX, 0.0, 0.0))).r,
+		texture(volume_tex,(pos - vec3(0.0, spaceY, 0.0))).r- texture(volume_tex,(pos + vec3(0.0, spaceY, 0.0))).r,
+		texture(volume_tex,(pos - vec3(0.0, 0.0, spaceZ))).r- texture(volume_tex,(pos + vec3(0.0, 0.0, spaceZ))).r
+		);
+	return n;
 }
 float getGradient(vec3 pos){
    	vec3 n = vec3(getVoxel(pos - vec3(spaceX, 0.0, 0.0)) - getVoxel(pos + vec3(spaceX, 0.0, 0.0)),
@@ -170,21 +176,32 @@ vec3 microfacet(vec3 pos,vec3 vcolor,vec3 dir){
 }
 vec3 LeovyColor(vec3 pos,vec3 vcolor,vec3 ec) {
     vec3 color = vec3(0.0,0.0,0.0);
-    vec3 n =  getGradientNormalAll(pos);//getGradientNormalAll(pos);
+    vec3 n =   getGradientNormalAll(pos);//   getGradientNoNormal(pos);
     //vec3 n = (Model*vec4(norm,1.0f)).xyz;
     //vec3 n = getGradientNormal(pos);
     vec3 specular; 
     vec3 diffuse;
     float gradLength = length(n);
-    vec3 H = normalize((-ec/length(-ec)).xyz+(LightPosition/length(LightPosition)).xyz);
-    float NL = max(dot(n,normalize(LightPosition.xyz)),0.0);
-    diffuse = vcolor*Ld[type]*NL;
-    color  += diffuse;
-    n = n/gradLength;
-    specular = vcolor*Ls[type]*pow(max(abs(dot(n,H)),0.0),sharp[type]);
-    color += specular; 
-    vec3 ambient = vcolor*La[type];
-    color  += ambient;
+	if (gradLength > 0.05) {
+		n = n / gradLength;
+		vec3 H = normalize((-ec / length(-ec)).xyz + (LightPosition / length(LightPosition)).xyz);
+		float NL = max(dot(n, normalize(LightPosition.xyz)), 0.0);
+		diffuse = vcolor*Ld[type] * NL;
+		color += diffuse;
+		n = n / gradLength;
+		specular = vcolor*Ls[type] * pow(max(abs(dot(n, H)), 0.0), sharp[type]);
+		color += specular;
+		vec3 ambient = vcolor*La[type];
+		color += ambient;
+	}
+	/*else {
+		vec3 H = normalize((-ec / length(-ec)).xyz + (LightPosition / length(LightPosition)).xyz);
+		float NL = max(dot(n, normalize(LightPosition.xyz)), 0.0);
+		diffuse = vcolor*Ld[type] * NL;
+		color += diffuse; 
+		vec3 ambient = vcolor; 
+		color += ambient; 
+	}*/
     //color =vcolor*La+La/(1+pos.z)*(vcolor*max(dot(-n,LightPosition.xyz),0.0)+vcolor*pow(max(dot(-n,H),0.0),10));
     // return color;
 	return color;
