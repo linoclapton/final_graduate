@@ -1,3 +1,3 @@
-# final_graduate
+# final_graduation
 
-project for graduate
+project for graduation
